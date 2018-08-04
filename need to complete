@@ -1,0 +1,5 @@
+arch x86 interrupt/interrupt.c need to complete default_handler_hard() function
+arch x86 memory.c
+kernel memory.c
+kernel interrupt.c
+kernel message.c
