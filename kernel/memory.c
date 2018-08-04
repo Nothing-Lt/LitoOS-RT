@@ -7,15 +7,11 @@ unsigned kernel_size;
 unsigned memory_size;
 unsigned free_memory_add;
 
-void* malloc(unsigned size)
+unsigned remap_page(void* page_table_add, unsigned linear_add, unsigned physical_add)
 {
-	return NULL;
+	return x86_remap_page(page_table_add, linear_add, physical_add);
 }
 
-int free(void* add)
-{
-    return 0;
-}
 
 
 
