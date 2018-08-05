@@ -70,11 +70,11 @@ void hlt();
 
 /* enable the IRQ */
 void sti();
-#define enable_IRQ()   sti()
+#define x86_enable_IRQ()   sti()
 
 /* disable the IRQ */
 void cli();
-#define disable_IRQ() cli()
+#define x86_disable_IRQ() cli()
 
 /* load gdt table to lgdt register*/
 void lgdt(int limit,int base);

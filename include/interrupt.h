@@ -25,5 +25,8 @@ int sys_regist_IRQ(unsigned irq_line,unsigned flag, void* dev,unsigned priority)
 
 int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev);
 
+void enable_IRQ();
+
+void disable_IRQ();
 
 #endif

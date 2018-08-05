@@ -2,6 +2,8 @@
 #define TASK_H
 
 #include "x86.h"
+#include <task.h>
+
 
 typedef struct
 {
@@ -12,9 +14,8 @@ typedef struct
 
 typedef struct 
 {
-    ldt this_ldt[LDT_SIZE];
     struct tss tasc;
-    unsigned selector,user_esp,
-}task;
+    unsigned selector,user_esp;
+}hardware_task;
 
 #endif
