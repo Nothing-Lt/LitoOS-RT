@@ -17,11 +17,8 @@
 #define REFRESH_TLB() asm("movl %cr3,%eax\n\
                            movl %eax,%cr3")
 
-/**/
 void x86_set_page(unsigned memory_size);
 
-int x86_remap_page(unsigned* page_table, unsigned linear_add, unsigned physical_add);
-
-
+int x86_remap_page(unsigned* page_table,unsigned lieanr_add,unsigned physical_add);
 
 #endif
