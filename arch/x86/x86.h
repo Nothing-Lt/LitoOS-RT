@@ -70,7 +70,7 @@ void hlt();
 
 /* enable the IRQ */
 void sti();
-#define x86_enable_IRQ()   sti()
+#define x86_enable_IRQ()  sti()
 
 /* disable the IRQ */
 void cli();

@@ -1,5 +1,5 @@
-#ifndef TASK_H
-#define TASK_H
+#ifndef X86_TASK_H
+#define X86_TASK_H
 
 #include "x86.h"
 #include <task.h>
@@ -14,7 +14,7 @@ typedef struct
 
 typedef struct 
 {
-    struct tss tasc;
+    tss tasc;
     unsigned selector,user_esp;
 }hardware_task;
 

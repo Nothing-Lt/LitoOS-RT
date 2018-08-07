@@ -22,7 +22,7 @@ int sys_regist_IRQ(unsigned irq_line,unsigned flag,void* dev,unsigned priority)
     return -1;
 }
 
-int sys_remove_IRQ(unsigned irq_line,unsigned minorvoid* dev)
+int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev)
 {
     return -1;
 }

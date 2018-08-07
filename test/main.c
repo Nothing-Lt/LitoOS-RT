@@ -5,10 +5,10 @@
 int main()
 {
 
-	disable_IRQ();
+    disable_IRQ();
     x86_init_hardware();
 
-    remap_page((unsigned*)PAGE_TABLE_ADD, 0x100000, 0x200000);
 
-	while(1);
+    while(1);
+    enable_IRQ();
 }

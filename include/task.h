@@ -34,7 +34,7 @@ typedef struct Lito_TCB
     unsigned      priority;      // dynamic priority
     unsigned      deadline;      // Absolute deadline
     hardware_task tcb;           // When you transplant this system to other platform, modify this!!!!!!!!
-    Lito_TCB      *next;         // next TCB of process
+    struct Lito_TCB  *next;         // next TCB of process
 }Lito_TCB;
 
 /*Create new task*/
