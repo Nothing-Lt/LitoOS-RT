@@ -13,36 +13,35 @@ idt* idt_addr;
 void x86_init_hardware()
 {
     kernel_size =get_memory((void*)KERNEL_SIZE_ADD)<<4;
-	init_gdt_idt(kernel_size);
+    init_gdt_idt(kernel_size);
 
     memory_size =check_memory();
 
     x86_set_page(memory_size);
-	
 }
 
 void init_gdt_idt(unsigned kernel_size)
 {
-	int i;
-	gdt_addr=(gdt*)GDT_ADD;
+    int i;
+    gdt_addr=(gdt*)GDT_ADD;
+ 
+    for( i=0 ; i<ELE_NUM_IN_GDT_TBL ; i++)
+    {
+        set_gdt(&gdt_addr[i],0,0,0);
+    }
+ 
+    set_gdt(&gdt_addr[1],0,X86_MAX_SIZE,DEFAULT_DESCRIP|SEGMENT_PRESENT|CODE_DATA_DESCRIP|DATA_DESCRIP);
+    set_gdt(&gdt_addr[2],0,X86_MAX_SIZE,DEFAULT_DESCRIP|SEGMENT_PRESENT|CODE_DATA_DESCRIP|CODE_DESCRIP);
+    lgdt(GDT_LENGTH,GDT_ADD);
 	
-	for( i=0 ; i<ELE_NUM_IN_GDT_TBL ; i++)
-	{
-		set_gdt(&gdt_addr[i],0,0,0);
-	}
+    free_memory_add=(GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt));
 	
-	set_gdt(&gdt_addr[1],0,X86_MAX_SIZE,DEFAULT_DESCRIP|SEGMENT_PRESENT|CODE_DATA_DESCRIP|DATA_DESCRIP);
-	set_gdt(&gdt_addr[2],0,X86_MAX_SIZE,DEFAULT_DESCRIP|SEGMENT_PRESENT|CODE_DATA_DESCRIP|CODE_DESCRIP);
-	lgdt(GDT_LENGTH,GDT_ADD);
+    if((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xf!=0)
+    {
+        free_memory_add=(((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xfffffff0)+8);
+    }
 	
-	free_memory_add=(GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt));
-	
-	if((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xf!=0)
-	{
-	    free_memory_add=(((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xfffffff0)+8);
-	}
-	
-	idt_addr=(idt*)free_memory_add;
+    idt_addr=(idt*)free_memory_add;
 
     set_idt(&idt_addr[0x00],(unsigned)asm_handle0x00,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0x01],(unsigned)asm_handle0x01,CODE_SELECTOR,INTERRUPT_DESCRIP);
@@ -108,7 +107,7 @@ void init_gdt_idt(unsigned kernel_size)
     set_idt(&idt_addr[0x3d],(unsigned)asm_handle0x3d,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0x3e],(unsigned)asm_handle0x3e,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0x3f],(unsigned)asm_handle0x3f,CODE_SELECTOR,INTERRUPT_DESCRIP);
-	set_idt(&idt_addr[0x40],(unsigned)asm_send_recv ,CODE_SELECTOR,INTERRUPT_DESCRIP|SYS_CALL_DESCRIP);
+    set_idt(&idt_addr[0x40],(unsigned)asm_send_recv ,CODE_SELECTOR,INTERRUPT_DESCRIP|SYS_CALL_DESCRIP);
     set_idt(&idt_addr[0x41],(unsigned)asm_handle0x41,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0x42],(unsigned)asm_handle0x42,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0x43],(unsigned)asm_handle0x43,CODE_SELECTOR,INTERRUPT_DESCRIP);
@@ -300,33 +299,46 @@ void init_gdt_idt(unsigned kernel_size)
     set_idt(&idt_addr[0xfd],(unsigned)asm_handle0xfd,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0xfe],(unsigned)asm_handle0xfe,CODE_SELECTOR,INTERRUPT_DESCRIP);
     set_idt(&idt_addr[0xff],(unsigned)asm_handle0xff,CODE_SELECTOR,INTERRUPT_DESCRIP);
-	
-	lidt(IDT_LENGTH,(unsigned)idt_addr);
-	free_memory_add=(((unsigned)free_memory_add)+ELE_NUM_IN_IDT_TBL*sizeof(idt));
+    
+    lidt(IDT_LENGTH,(unsigned)idt_addr);
+    free_memory_add=(((unsigned)free_memory_add)+ELE_NUM_IN_IDT_TBL*sizeof(idt));
 }
 
 void set_idt(idt *i,unsigned offset,int selector,int ar)
 {
-	i->offset_low = offset   & 0xffff;
-	i->selector   = selector & 0xffff;
-	i->nothing    = 0;
-	i->ar         = ar & 0xff;
-	i->offset_high= (offset>>16) & 0xffff;
+    i->offset_low = offset   & 0xffff;
+    i->selector   = selector & 0xffff;
+    i->nothing    = 0;
+    i->ar         = ar & 0xff;
+    i->offset_high= (offset>>16) & 0xffff;
 }
 
 void set_gdt(gdt *g,unsigned base,unsigned limit,int ar)
 {
-	if(limit>0xfffff)
-	{
-		ar   = ar | BIG_DESCRIP;
-		limit= limit / 0x1000;
-	}
-	g->limit_low = limit     & 0xffff;
-	g->base_low  = base      & 0xffff;
-	g->base_mid  = (base>>16)& 0xff;
-	g->base_high = (base>>24)& 0xff;
-	g->ar        = ar        & 0xff;
-	g->limit_high= (ar>>8)   & 0xf0 | (limit>>16) & 0xf;
+    if(limit>0xfffff)
+    {
+        ar   = ar | BIG_DESCRIP;
+        limit= limit / 0x1000;
+    }
+    g->limit_low = limit     & 0xffff;
+    g->base_low  = base      & 0xffff;
+    g->base_mid  = (base>>16)& 0xff;
+    g->base_high = (base>>24)& 0xff;
+    g->ar        = ar        & 0xff;
+    g->limit_high= (ar>>8)   & 0xf0 | (limit>>16) & 0xf;
 }
 
+unsigned find_empty_gdt()
+{
+    unsigned i;
+
+    for(i=1;i<ELE_NUM_IN_GDT_TBL;i++)
+    {
+        if(gdt_addr[i].ar==NULL&&gdt_addr[i+1].ar==NULL)
+        {
+            return i;
+        }
+    }
+    return 0;
+}
 

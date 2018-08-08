@@ -32,7 +32,7 @@ typedef struct unused_block
 
 
 /*initial the memory block, this memory block servey for malloc and free function*/
-void init_memory_block(void* memory_add,unsigned memory_size);
+void init_memory_block(unsigned memory_add,unsigned memory_size);
 
 /*this is the "malloc"*/
 void* malloc(unsigned size);

@@ -46,21 +46,22 @@
 #define DS_GDT        1
 #define CS_GDT        2
 #define CS_LDT        1
+#define NORMAL_IOMAPBASE 0x490000
 
 // GDT LDT IDT struct define it's from Intel x86 
 typedef struct
 {
-	unsigned short limit_low,base_low;
-	unsigned char  base_mid, ar,      limit_high,base_high;
+    unsigned short limit_low,base_low;
+    unsigned char  base_mid, ar,      limit_high,base_high;
 }gdt;
 
 typedef gdt ldt;
 
 typedef struct
 {
-	unsigned short offset_low,selector;
-	unsigned char  nothing   ,ar;
-	unsigned short offset_high;
+    unsigned short offset_low,selector;
+    unsigned char  nothing   ,ar;
+    unsigned short offset_high;
 }idt;
 
 // following hunction defined in "x86_lib.asm"
@@ -141,6 +142,9 @@ void set_gdt(gdt* g,unsigned memory_add ,unsigned limit,int ar);
 
 /* set an element in idt table */
 void set_idt(idt* i,unsigned handler_add,int selector  ,int ar);
+
+/*Find an empty GDT slot from GDT table*/
+unsigned find_empty_gdt();
 
 /* initial gdt and idt table and load address in gdt idt register */
 void init_gdt_idt();

@@ -58,10 +58,10 @@ int set_IRQLINE_handler(unsigned irq,void* function)
 
     if(irq>=IRQLINE_NUMBER)       // out of range of IRQ handler table
     {
-    	return 0;
+        return 0;
     }
 
-	handler_list.function_pointer[irq]=function;
+    handler_list.function_pointer[irq]=function;
 
     return 1;
 }
@@ -81,7 +81,7 @@ int remove_IRQLINE_handler(unsigned irq)
     }
     else                           //0x20-0xff belongs to interrupt caused by hardware
     {
-    	handler_list.function_pointer[irq]=(void*)default_handler_hard;
+        handler_list.function_pointer[irq]=(void*)default_handler_hard;
     }
     
     return 1;
@@ -98,7 +98,7 @@ void init_handler_for_IRQLINE()
     }
     for( i=HARD_IRQLINE_BEGIN ; i<=HARD_IRQLINE_END ; i++ )
     {
-    	handler_list.function_pointer[i]=(void*)default_handler_hard;
+        handler_list.function_pointer[i]=(void*)default_handler_hard;
     }
 }
 

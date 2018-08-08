@@ -10,14 +10,13 @@ unsigned free_memory_add;
 unused_block* unused_block_list;
 
 
-void init_memory_block(void* memory_add, unsigned memory_size)
+void init_memory_block(unsigned memory_add, unsigned memory_size)
 {
     unused_block_list           = (unused_block*)memory_add;
     unused_block_list->base_add = (unsigned)memory_add;
     unused_block_list->size     = memory_size;
     unused_block_list->next     = NULL;
 }
-
 
 
 void* malloc(unsigned size)
@@ -31,7 +30,7 @@ void* malloc(unsigned size)
 
     if(size==0)
     {
-    	return NULL;
+        return NULL;
     }
 
     alloc_size = ((size/MIN_BLOCK_SIZE)+1)*MIN_BLOCK_SIZE;
@@ -57,21 +56,23 @@ void* malloc(unsigned size)
         }
     }
     
-    if(temp->next == NULL && temp==unused_block_list)
+    if(temp->next==NULL && temp==unused_block_list)
     {
         allocated_mem = (used_block*)temp;
 
-    	fixed_base_add = temp->base_add + alloc_size;
-    	fixed_size = temp->size - alloc_size;
+        fixed_base_add = temp->base_add + alloc_size;
+        fixed_size = temp->size - alloc_size;
 
-    	new_block = (unused_block*)fixed_base_add;
-    	new_block->base_add = fixed_base_add;
-    	new_block->size = fixed_size;
-    	new_block->next = NULL;
+        new_block = (unused_block*)fixed_base_add;
+        new_block->base_add = fixed_base_add;
+        new_block->size = fixed_size;
+        new_block->next = NULL;
+        
+        unused_block_list = new_block;
     }
     else
     {
-    	return NULL;
+        return NULL;
     }
 
     allocated_mem->base_add = (unsigned)(allocated_mem);
@@ -117,10 +118,10 @@ int free(void* add)
         }
         else
         {
-        	temp->next = new_block;
+            temp->next = new_block;
         }
         return  1;
     }
 
-	return 0;
+    return 0;
 }

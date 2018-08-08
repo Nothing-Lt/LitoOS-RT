@@ -3,9 +3,9 @@
 
 extern unsigned free_memory_add;
 extern unsigned memory_size;
+
+
 // initial page table and store into cr3 register
-
-
 void x86_set_page(unsigned memory_size)
 {
     int i;

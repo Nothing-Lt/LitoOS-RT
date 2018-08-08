@@ -3,7 +3,7 @@ os:
 	cd arch && make arch_x86
 	cd test && make test
 	cd kernel && make kernel
-	ld -m elf_i386 main.o memory.o message.o schedual.o task.o interrupt.o x86.o x86_memory.o x86_lib_s.o x86_interrupt.o x86_interrupt_s.o -o sys.bin -Ttext 0x200000 -e main --oformat binary
+	ld -m elf_i386 main.o memory.o message.o schedual.o task.o interrupt.o x86.o x86_memory.o x86_lib_s.o x86_interrupt.o x86_interrupt_s.o x86_task.o -o sys.bin -Ttext 0x200000 -e main --oformat binary
 	# check the fd file if exsists
 	if [ ! -x "fd" ]; then mkdir fd; fi
 	#############################
@@ -24,7 +24,7 @@ os:
 	dd if=boot.bin of=LitoOS.img bs=512 count=1 conv=notrunc
 	rm *.o
 
-test:
+debug:
 	bochs -q 'boot:a' 'floppya: 1_44=LitoOS.img, status=inserted'
 
 clean:

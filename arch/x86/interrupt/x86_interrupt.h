@@ -19,13 +19,13 @@
 // normal exception handler list 
 typedef struct
 {
-  void* function_pointer[IRQLINE_NUMBER];
+    void* function_pointer[IRQLINE_NUMBER];
 }handle_list;
 
 // software interrupt handler the system call interface
 typedef struct
 {
-  void (*send_recv)(void* msg);//(struct message *msg);
+    void (*send_recv)(void* msg);//(struct message *msg);
 }send_recv_s;
 
 // software exception handler
