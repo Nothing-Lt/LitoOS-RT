@@ -18,7 +18,6 @@ void disable_IRQ()
 
 int sys_regist_IRQ(unsigned irq_line,unsigned flag,void* dev,unsigned priority)
 {
-
     return -1;
 }
 

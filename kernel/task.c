@@ -202,21 +202,39 @@ Return value:
 */
 unsigned create_task(Lito_task* task)
 {
-    Lito_TCB *lito_tcb=NULL;
-    TCB *tt=NULL;
+    Lito_TCB *tcb=NULL;
 
     if(task == NULL)
     {
         return 0;
     }
 
-    lito_tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
-    if(lito_tcb == NULL)
+    tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
+    if(tcb == NULL)
     {
         return 0;
     }
 
-    lito_tcb->tcb = set_hardware_TCB(task->function);
+    tcb->tcb = set_hardware_TCB(task->function);
+
+    if(task->flag&TG_CLOCK_EVENT)
+    {
+        /* those tasks triggered by Clock interruption,
+           most for periodtc tasks */
+    }
+    else if(task->flag&TG_EXTERNAL_EVENT)
+    {
+        /* Those tasks triggered by External interruption,
+           most for aperiodic tasks */
+    }
+    else if(task->flag&NORMAL_EVENT)
+    {
+        /*Those normal tasks,just run once, and maybe no deadline*/
+        tcb->status = RUNNING;
+        tcb->priority = task->priority;
+    }
+    tcb->pid = task->pid;
+    TCB_list_insert(tcb);
 
     return 1;
 }

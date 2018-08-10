@@ -7,6 +7,15 @@
 #define MAX_TCB_NUMBER 128
 #define MAX_TASK_NUMBER MAX_TCB_NUMBER
 
+#define TG_CLOCK_EVENT    0x1   //For Periodic JOBs
+#define TG_EXTERNAL_EVENT 0x2   //For Aperiodic JOBs
+#define NORMAL_EVENT      0x4   //For Normal JOBs
+
+#define RUNNING           0x1   //task status
+#define READY             0x2   //task status
+#define HANGING           0x4   //task status
+
+
 /* This structure is for LitoOS,no need to modify */
  typedef struct 
  {
