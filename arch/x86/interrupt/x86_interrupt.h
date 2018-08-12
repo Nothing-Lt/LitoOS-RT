@@ -576,7 +576,6 @@ void handle0xff();
 
 //default handler for software and hardware interrupt
 void default_handler_soft(unsigned error_ip,unsigned error_code);
-void default_handler_hard(unsigned irq_num);
 
 // this function for setting handler of an IRQ line,
 // and this function is only callde by system kernel,

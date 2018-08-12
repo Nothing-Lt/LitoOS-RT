@@ -11,7 +11,7 @@ typedef struct
 {
     void*    dev;
     unsigned flag;
-    unsigned process_id;
+    unsigned pid;
     unsigned priority;
 }IRQ_minor_desc;
 
@@ -28,5 +28,7 @@ int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev);
 void enable_IRQ();
 
 void disable_IRQ();
+
+void default_handler_hard(unsigned irq);
 
 #endif

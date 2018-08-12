@@ -27,15 +27,9 @@ int main()
     enable_IRQ();
 }
 
-
 void function()
 {
     int i;
-    for(i=0;i<20;i++)
-    {
-        if(i>10)
-        {
-            i--;
-        }
-    }
+
+    for(i=0;i<20;);
 }

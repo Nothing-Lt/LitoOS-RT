@@ -20,32 +20,6 @@ void default_handler_soft(unsigned error_ip,unsigned error_code)
     return;
 }
 
-/* this function should be use when system received hardware interrupt*/
-void default_handler_hard(unsigned irq)
-{
-    //int i;
-    //Message msg;
-	
-	// check if this irq is legle 
-    /*if( irq<REUSEABLE_IRQLINE || irq>IRQLINE_NUMBER )
-    {
-    	return;
-    }*/
-    
-    // check this some driver registed this IRQ line
-    /*if( IRQ_desc_table[irq].registed_number!=0)
-    {
-        for( i=0 ; i<IRQ_desc_table[irq].registed_number ; i++ )
-        {*/
-            /*if(IRQ_desc_table[irq].minor_table[i].flag!=0)
-            {
-                //if(IRQ_desc_table[irq].minor_table[i])   
-            }*/
-        //}
-    //}
-    return;
-}
-
 // set the handler for No.irq line handler
 // this function only for system, not for user program
 int set_IRQLINE_handler(unsigned irq,void* function)

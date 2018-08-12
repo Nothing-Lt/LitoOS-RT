@@ -209,13 +209,8 @@ unsigned create_task(Lito_task* task)
         return 0;
     }
 
-    tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
-    if(tcb == NULL)
-    {
-        return 0;
-    }
+    task_list_insert(task);
 
-    tcb->tcb = set_hardware_TCB(task->function);
 
     if(task->flag&TG_CLOCK_EVENT)
     {
@@ -230,11 +225,8 @@ unsigned create_task(Lito_task* task)
     else if(task->flag&NORMAL_EVENT)
     {
         /*Those normal tasks,just run once, and maybe no deadline*/
-        tcb->status = RUNNING;
-        tcb->priority = task->priority;
+        activate_task(task->pid);
     }
-    tcb->pid = task->pid;
-    TCB_list_insert(tcb);
 
     return 1;
 }
@@ -249,6 +241,93 @@ Return value:
 */
 int activate_task(unsigned pid)
 {
+    int i;
+    Lito_TCB* tcb = NULL;
+    Lito_task* lt = NULL;
+
+    if(pid==0 || task_l==NULL || TCB_l==NULL)
+    {
+        return 0;
+    }
+  
+    /*First, search the task which you want to activate from the TCB list,
+      if it not exists in the TCB list,then try to search from task list.*/
+    for(i=0;i<MAX_TCB_NUMBER;i++)
+    {
+        if(TCB_l->list[i]!=NULL)
+        {
+            if(TCB_l->list[i]->pid==pid)
+            {
+                TCB_l->list[i]->status = RUNNING;
+                // Insert TCB_l[i] into running queue;
+                //
+                return 1;
+            }
+        }
+    }  
+    
+    /*Second, we didn't found the task you are trying to activate from the TCB list,
+      then try to find this task from task list, and regist it into TCB list,run it.*/
+    for(i=0;i<MAX_TASK_NUMBER;i++)
+    {
+        if(task_l->list[i] != NULL)
+        {
+            lt=task_l->list[i];
+            if(lt->pid == pid)
+            {
+                tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
+                if(tcb == NULL)
+                {
+                    return 0;
+                }
+                tcb->pid = lt->pid;
+                tcb->tcb = set_hardware_TCB(lt->function);
+                tcb->status = RUNNING;
+                tcb->priority = lt->priority;
+                TCB_list_insert(tcb);
+                // Insert TCB_l[i] into running queue
+                //
+                return 1;
+            }
+        }
+    }
+
+
+
     return 0;
 }
 
+/*
+This function is a "shell",
+
+  
+*/
+void function_shell(Lito_task* task)
+{
+    void (*job)() = NULL;
+
+    if(task!=NULL && task->function!=NULL)
+    {
+        job = (void (*)())task->function;
+        job();   
+    }
+    
+    if(task->flag == TG_EXTERNAL_EVENT)
+    {
+        // Reset the status of this job
+        // Let this job wait the external event again
+    }
+    if(task->flag == TG_CLOCK_EVENT)
+    {
+        // Reset the status of this job
+        // Let this job wait the clock event again
+    }
+    else
+    {  
+        /*
+         Insert some code to exit from TCB list
+         Insert some code to exit from task list
+        */
+    }
+
+}

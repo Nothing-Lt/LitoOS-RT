@@ -1,9 +1,6 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "../arch/x86/x86.h"
-#include "../arch/x86/x86_task.h"
-
 #define MAX_TCB_NUMBER 128
 #define MAX_TASK_NUMBER MAX_TCB_NUMBER
 
@@ -93,5 +90,8 @@ unsigned create_task(Lito_task *task);
 
 /*Activate task*/
 int activate_task(unsigned pid);
+
+/*Shell funtion for jobs*/
+void function_shell(Lito_task* task);
 
 #endif
