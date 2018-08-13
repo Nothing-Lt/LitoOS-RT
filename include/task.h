@@ -6,7 +6,7 @@
 
 #define TG_CLOCK_EVENT    0x1   //For Periodic JOBs
 #define TG_EXTERNAL_EVENT 0x2   //For Aperiodic JOBs
-#define NORMAL_EVENT      0x4   //For Normal JOBs
+#define NORMAL_TASK       0x4   //For Normal JOBs
 
 #define RUNNING           0x1   //task status
 #define READY             0x2   //task status
@@ -18,12 +18,12 @@
  {
     unsigned          pid;
     unsigned          flag;      // This task is periodic or aperiodic
-    unsigned          status;    // running ,waiting, hanging or else
     unsigned          priority;  // priority useful for static priority scheduling.
     unsigned          WCET;      // Worst Case Execution Time.
     unsigned          deadline;  // Releated deadline
     unsigned          start_time;// when this task start
     unsigned          period;    // what the period of this task
+    unsigned          extra;     // External event IRQ line number and something else 
     void*             function;  // Entry point of this task
     struct Lito_TCB*  tcb;       //
     struct Lito_task* next;      //

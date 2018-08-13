@@ -16,6 +16,9 @@
 #define HARD_IRQLINE_END   0xff   //[0x20,0xff] for hardware interrupt
 #define IRQLINE_NUMBER     0x100
 
+// IRQ line for clock interrupt
+#define CLOCK_IRQ_LINE     0x20
+
 // normal exception handler list 
 typedef struct
 {

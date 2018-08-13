@@ -1,4 +1,5 @@
-GCC=gcc -I ../../../include -m32 -c -o 
+NO_PIE=-fno-pie
+GCC=gcc -I ../../../include $(NO_PIE) -m32 -c -o 
 NASM=nasm -f elf -o
 
 interrupt:

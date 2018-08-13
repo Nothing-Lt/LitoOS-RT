@@ -12,16 +12,21 @@ void function();
 
 int main()
 {
-    Lito_task *task;
-    disable_IRQ();
-    x86_init_hardware();
+    Lito_task* task;
+    disable_IRQ();        //This function is offered by LitoOS
+    x86_init_hardware();  //Hardware initialze 
 
-    init_memory_block(free_memory_add,memory_size-free_memory_add);
+    init_memory_block(free_memory_add,memory_size-free_memory_add); //LitoOS memory management 
+    IRQ_desc_table_init();                                          //LitoOS external IRQ table initialize
 
+    task_list_init();
+    TCB_list_init();
     task = (Lito_task*)malloc(sizeof(Lito_task));
+    task->flag = NORMAL_TASK;
     task->pid=++pid;
     task->function = (void*)function;
     task->next = NULL;
+    task->tcb = NULL;
     create_task(task);
 
     while(1);

@@ -9,6 +9,27 @@
 
 IRQ_desc IRQ_desc_table[IRQLINE_NUMBER];
 
+void IRQ_desc_table_init()
+{
+    int i,j;
+    IRQ_minor_desc* minor_desc = NULL;
+
+    for(i=0;i<IRQLINE_NUMBER;i++)
+    {
+        IRQ_desc_table[i].registed_number = 0;
+        for(j=0;j<MINOR_DEV_NUMBER;j++)
+        {
+            minor_desc           = &(IRQ_desc_table[i].minor_table[j]);
+            minor_desc->dev      = NULL;
+            minor_desc->flag     = UNUSED;
+            minor_desc->pid      = \
+            minor_desc->priority = 0;
+        }
+    }
+}
+
+
+
 void enable_IRQ()
 {
     x86_enable_IRQ();
@@ -29,12 +50,26 @@ int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev)
     return -1;
 }
 
+int set_trigger_IRQ(unsigned irq_line,unsigned flag,Lito_task* task)
+{
+    if(irq_line>=IRQLINE_NUMBER || task==NULL)
+    {
+        return 0;
+    }
+
+    task->next = (Lito_task*)(IRQ_desc_table[irq_line].minor_table[0].dev);
+    IRQ_desc_table[irq_line].minor_table[0].dev = (void*)task;
+    IRQ_desc_table[irq_line].minor_table[0].flag = task->flag;
+
+    return 1;
+}
+
 void default_handler_hard(unsigned irq)
 {
     int i;
     IRQ_minor_desc* imd = NULL;
-    Lito_task* task     = NULL;
-    Lito_task* tmp      = NULL;
+    Lito_task*      task= NULL;
+    Lito_task*      tmp = NULL;
     //Message msg;
 	
 	// check if this irq is legle 
@@ -69,7 +104,7 @@ void default_handler_hard(unsigned irq)
     // send those tasks message by using IPC
     if( IRQ_desc_table[irq].registed_number!=0)
     {
-        for( i=1 ; i<IRQ_desc_table[irq].registed_number ; i++ )
+        for( i=1 ; i<MINOR_DEV_NUMBER ; i++ )
         {
         	imd = &(IRQ_desc_table[irq].minor_table[i]);
             if(imd->flag!=UNUSED)

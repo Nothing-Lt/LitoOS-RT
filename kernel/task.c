@@ -1,8 +1,10 @@
 #include <task.h>
 #include <memory.h>
+#include <interrupt.h>
 
 #include "../arch/x86/x86.h"
 #include "../arch/x86/x86_task.h"
+#include "../arch/x86/interrupt/x86_interrupt.h"
 
 task_list* task_l;
 TCB_list* TCB_l;
@@ -202,7 +204,8 @@ Return value:
 */
 unsigned create_task(Lito_task* task)
 {
-    Lito_TCB *tcb=NULL;
+    unsigned IRQ_line = 0;
+    Lito_TCB *tcb = NULL;
 
     if(task == NULL)
     {
@@ -216,13 +219,15 @@ unsigned create_task(Lito_task* task)
     {
         /* those tasks triggered by Clock interruption,
            most for periodtc tasks */
+        if(!set_trigger_IRQ(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
     }
     else if(task->flag&TG_EXTERNAL_EVENT)
     {
         /* Those tasks triggered by External interruption,
            most for aperiodic tasks */
+        if(!set_trigger_IRQ(task->extra,task->flag,task)){while(1);}
     }
-    else if(task->flag&NORMAL_EVENT)
+    else if(task->flag&NORMAL_TASK)
     {
         /* Those normal tasks,just run once, and maybe no deadline*/
         activate_task(task);
@@ -242,6 +247,7 @@ Return value:
 int activate_task(Lito_task* task)
 {
     Lito_TCB* tcb = NULL;
+    TCB* tt = NULL;
 
     if(task==NULL || task_l==NULL || TCB_l==NULL)
     {
@@ -264,8 +270,11 @@ int activate_task(Lito_task* task)
         tcb->priority = task->priority;
         tcb->task = task;
         TCB_list_insert(tcb);
-    }
 
+        ///This is for debug
+        tt = (TCB*)tcb->tcb;
+        far_jump(0,tt->selector);
+    }
 
     return 0;
 }
@@ -288,22 +297,25 @@ Retuen value:
 void function_shell(Lito_task* task)
 {
     void (*job)() = NULL;
+    void* tmp     = task->function; 
 
-    if(task!=NULL && task->function!=NULL)
+    if(task!=NULL && tmp!=NULL)
     {
-        job = (void (*)())task->function;
-        job();   
+        job = (void (*)())tmp;
+        job();
     }
     
-    if(task->flag == TG_EXTERNAL_EVENT)
-    {
-        // Reset the status of this job
-        // Let this job wait the external event again
-    }
-    if(task->flag == TG_CLOCK_EVENT)
+    if(task->flag&TG_CLOCK_EVENT)
     {
         // Reset the status of this job
         // Let this job wait the clock event again
+        if(!set_trigger_IRQ(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
+    }
+    else if(task->flag&TG_EXTERNAL_EVENT)
+    {
+        // Reset the status of this job
+        // Let this job wait the external event again
+        if(!set_trigger_IRQ(task->extra,task->flag,task)){while(1);}
     }
     else
     {

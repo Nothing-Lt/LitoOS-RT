@@ -1,7 +1,9 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 
-#define MAX_DEV_PER_IRQLINE 25
+#include <task.h>
+
+#define MINOR_DEV_NUMBER    25
 #define UNUSED              0
 #define WANT_ERR_CODE       1
 #define WANT_ERR_IP         2
@@ -17,13 +19,17 @@ typedef struct
 
 typedef struct 
 {
-    IRQ_minor_desc minor_table[MAX_DEV_PER_IRQLINE];
+    IRQ_minor_desc minor_table[MINOR_DEV_NUMBER];
     unsigned registed_number;
 }IRQ_desc;
+
+void IRQ_desc_table_init();
 
 int sys_regist_IRQ(unsigned irq_line,unsigned flag, void* dev,unsigned priority);
 
 int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev);
+
+int set_trigger_IRQ(unsigned irq_line,unsigned flag,Lito_task* task);
 
 void enable_IRQ();
 

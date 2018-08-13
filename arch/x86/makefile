@@ -1,5 +1,6 @@
 NO_STDLIB=-nostdlib -fno-builtin
-GCC=gcc -I ../../include $(NO_STDLIB) -c -m32 -o
+NO_PIE=-fno-pie
+GCC=gcc -I ../../include $(NO_STDLIB) $(NO_PIE) -c -m32 -o
 NASM=nasm -f elf -o
 
 x86:
