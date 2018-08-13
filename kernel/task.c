@@ -224,8 +224,8 @@ unsigned create_task(Lito_task* task)
     }
     else if(task->flag&NORMAL_EVENT)
     {
-        /*Those normal tasks,just run once, and maybe no deadline*/
-        activate_task(task->pid);
+        /* Those normal tasks,just run once, and maybe no deadline*/
+        activate_task(task);
     }
 
     return 1;
@@ -234,73 +234,56 @@ unsigned create_task(Lito_task* task)
 /*
 Activativate specific task
 Parameter:
-   process id
+   A pointer point at a Lito_task instant
 Return value:
    1: success
    0: otherwise
 */
-int activate_task(unsigned pid)
+int activate_task(Lito_task* task)
 {
-    int i;
     Lito_TCB* tcb = NULL;
-    Lito_task* lt = NULL;
 
-    if(pid==0 || task_l==NULL || TCB_l==NULL)
+    if(task==NULL || task_l==NULL || TCB_l==NULL)
     {
         return 0;
     }
   
-    /*First, search the task which you want to activate from the TCB list,
-      if it not exists in the TCB list,then try to search from task list.*/
-    for(i=0;i<MAX_TCB_NUMBER;i++)
+    // No TCB belongs to this task in TCB_list, so alloc one,
+    // fill it and insert into TCb_list and set something.
+    if(task->tcb == NULL)
     {
-        if(TCB_l->list[i]!=NULL)
+        tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
+        if(tcb == NULL)
         {
-            if(TCB_l->list[i]->pid==pid)
-            {
-                TCB_l->list[i]->status = RUNNING;
-                // Insert TCB_l[i] into running queue;
-                //
-                return 1;
-            }
+            return 0;
         }
-    }  
-    
-    /*Second, we didn't found the task you are trying to activate from the TCB list,
-      then try to find this task from task list, and regist it into TCB list,run it.*/
-    for(i=0;i<MAX_TASK_NUMBER;i++)
-    {
-        if(task_l->list[i] != NULL)
-        {
-            lt=task_l->list[i];
-            if(lt->pid == pid)
-            {
-                tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
-                if(tcb == NULL)
-                {
-                    return 0;
-                }
-                tcb->pid = lt->pid;
-                tcb->tcb = set_hardware_TCB(lt->function);
-                tcb->status = RUNNING;
-                tcb->priority = lt->priority;
-                TCB_list_insert(tcb);
-                // Insert TCB_l[i] into running queue
-                //
-                return 1;
-            }
-        }
-    }
 
+        tcb->pid = task->pid;
+        tcb->tcb = hardware_TCB_init(function_shell,task);
+        tcb->status = RUNNING;
+        tcb->priority = task->priority;
+        tcb->task = task;
+        TCB_list_insert(tcb);
+    }
 
 
     return 0;
 }
 
+int reset_task(Lito_task* task)
+{
+    return 0;
+}
+
 /*
 This function is a "shell",
-
-  
+It's like a container for the job function
+and at the end of this "shell function",
+the TCB of this job will be reset.
+Parameter:
+    A pointor point to a Lito_task structure
+Retuen value:
+    NO
 */
 void function_shell(Lito_task* task)
 {
@@ -323,11 +306,10 @@ void function_shell(Lito_task* task)
         // Let this job wait the clock event again
     }
     else
-    {  
-        /*
-         Insert some code to exit from TCB list
-         Insert some code to exit from task list
-        */
+    {
+        // Insert some code to exit from TCB list
+        // Insert some code to exit from task list
     }
+    //Here must switch task, otherwise it will be a terrible mitstake 
 
 }

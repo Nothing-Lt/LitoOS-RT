@@ -7,7 +7,7 @@
 
 extern gdt* gdt_addr;
 
-void* set_hardware_TCB(void* function)
+void* hardware_TCB_init(void* function,void* parameter)
 {
     TCB* tcb = NULL;
     void* esp = NULL;
@@ -53,6 +53,8 @@ void* set_hardware_TCB(void* function)
 
     tcb->selector = gdt_selector<<3;
     set_gdt(&gdt_addr[gdt_selector],(unsigned)&(tcb->tasc),TSS_SIZE,TSS_DESCRIB);
+
+    *((void**)(esp+2*SIZE_OF_PAGE-sizeof(void*))) = parameter;
 
     return (void*)tcb;
 }

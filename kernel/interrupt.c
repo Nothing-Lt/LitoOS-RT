@@ -33,6 +33,8 @@ void default_handler_hard(unsigned irq)
 {
     int i;
     IRQ_minor_desc* imd = NULL;
+    Lito_task* task     = NULL;
+    Lito_task* tmp      = NULL;
     //Message msg;
 	
 	// check if this irq is legle 
@@ -41,18 +43,38 @@ void default_handler_hard(unsigned irq)
     	return;
     }
     
-    // check this some driver registed this IRQ line
+    // Activate those tasks which are waitting this interrupt.
+    // Those tasks waked up is triggered by external event.
+    // For each IRQ line, the first minor descriptor (minor_table[0]) is for Keeping the task structure,
+    // for those tasks request for this external event
+    imd = &(IRQ_desc_table[irq].minor_table[0]);
+    if(imd->flag!=UNUSED)
+    {
+        if(imd->flag & TG_EXTERNAL_EVENT)
+        {
+            task = (Lito_task*)(imd->dev);
+        }
+
+        // This while loop is for waking up those tasks waitting for this external event
+        while(task!=NULL)
+        {
+            activate_task(task);
+            tmp  = task;
+            task = task->next;
+            tmp->next = NULL;
+        }
+    }
+
+    // Some tasks need this external interrupt
+    // send those tasks message by using IPC
     if( IRQ_desc_table[irq].registed_number!=0)
     {
-        for( i=0 ; i<IRQ_desc_table[irq].registed_number ; i++ )
+        for( i=1 ; i<IRQ_desc_table[irq].registed_number ; i++ )
         {
         	imd = &(IRQ_desc_table[irq].minor_table[i]);
             if(imd->flag!=UNUSED)
             {
-                if(imd->flag & TG_EXTERNAL_EVENT)
-                {
-                	activate_task(imd->pid);
-                }   
+                //Message something
             }
         }
     }

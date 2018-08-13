@@ -14,17 +14,19 @@
 
 
 /* This structure is for LitoOS,no need to modify */
- typedef struct 
+ typedef struct Lito_task
  {
-    unsigned pid;
-    unsigned flag;      // This task is periodic or aperiodic
-    unsigned status;    // running ,waiting, hanging or else
-    unsigned priority;  // priority useful for static priority scheduling.
-    unsigned WCET;      // Worst Case Execution Time.
-    unsigned deadline;  // Releated deadline
-    unsigned start_time;// when this task start
-    unsigned period;    // what the period of this task
-    void*    function;  // Entry point of this task
+    unsigned          pid;
+    unsigned          flag;      // This task is periodic or aperiodic
+    unsigned          status;    // running ,waiting, hanging or else
+    unsigned          priority;  // priority useful for static priority scheduling.
+    unsigned          WCET;      // Worst Case Execution Time.
+    unsigned          deadline;  // Releated deadline
+    unsigned          start_time;// when this task start
+    unsigned          period;    // what the period of this task
+    void*             function;  // Entry point of this task
+    struct Lito_TCB*  tcb;       //
+    struct Lito_task* next;      //
  }Lito_task;
 
 
@@ -37,13 +39,14 @@
 */
 typedef struct Lito_TCB
 {
-    unsigned      pid;
-    unsigned      status;         // process status: running, waiting, hanging
-    unsigned      compution_time; // rest compution time
-    unsigned      priority;       // dynamic priority
-    unsigned      deadline;       // Absolute deadline
-    void*         tcb;            // When you transplant this system to other platform, modify this!!!!!!!!
-    struct Lito_TCB  *next;       // next TCB of process
+    unsigned         pid;  
+    unsigned         status;         // process status: running, waiting, hanging
+    unsigned         compution_time; // rest compution time
+    unsigned         priority;       // dynamic priority
+    unsigned         deadline;       // Absolute deadline
+    Lito_task*       task;           //
+    void*            tcb;            // When you transplant this system to other platform, modify this!!!!!!!!
+    struct Lito_TCB* next;           // next TCB of process
 }Lito_TCB;
 
 /*
@@ -86,10 +89,10 @@ int task_list_insert(Lito_task* task);
 int task_list_remove(unsigned pid);
 
 /*Create new task*/
-unsigned create_task(Lito_task *task);
+unsigned create_task(Lito_task* task);
 
 /*Activate task*/
-int activate_task(unsigned pid);
+int activate_task(Lito_task* task);
 
 /*Shell funtion for jobs*/
 void function_shell(Lito_task* task);

@@ -12,16 +12,17 @@ void function();
 
 int main()
 {
-    Lito_task *t;
+    Lito_task *task;
     disable_IRQ();
     x86_init_hardware();
 
     init_memory_block(free_memory_add,memory_size-free_memory_add);
 
-    t = (Lito_task*)malloc(sizeof(Lito_task));
-    t->pid=++pid;
-    t->function = (void*)function;
-    create_task(t);
+    task = (Lito_task*)malloc(sizeof(Lito_task));
+    task->pid=++pid;
+    task->function = (void*)function;
+    task->next = NULL;
+    create_task(task);
 
     while(1);
     enable_IRQ();
