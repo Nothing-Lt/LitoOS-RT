@@ -14,7 +14,7 @@ unsigned pid;
 /*
 Initial task list 
 Parameter:
-    void
+    No
 Return value:
     0: falied(because malloc)
     1: successed
@@ -42,7 +42,7 @@ int task_list_init()
 /*
 initial the TCB list
 Parameter:
-    void
+    No
 Return value:
     0: failed (might because some mistake occured in malloc)
     1: succesed
@@ -64,6 +64,19 @@ int TCB_list_init()
     }
 
     return 1;
+}
+
+/*
+Initialize the running queue
+Parameter:
+    No
+Return value:
+    0:failed
+    1:Successed
+*/
+int running_queue_init()
+{
+    return 0;
 }
 
 /*
@@ -195,6 +208,32 @@ int task_list_remove(unsigned pid)
     return 0;
 }
 
+/*
+Insert TCB into running queue
+parameter:
+    tcb: Pointer point to an Lito_task instance
+Return value:
+    0:Failed
+    1:Successed
+*/
+int running_queue_insert(Lito_TCB* tcb)
+{
+    return 0;
+}
+
+/*
+Remove the TCB from running queue
+Parameter:
+    pid: the pid of TCB which you want to remvoe from running queue
+Return value:
+    0: Failed
+    1: Susscced
+*/
+int running_queue_remove(unsigned pid)
+{
+    return 0;
+}
+
 /* 
 Parameter:
    Lito_task structure
@@ -230,7 +269,7 @@ unsigned create_task(Lito_task* task)
     else if(task->flag&NORMAL_TASK)
     {
         /* Those normal tasks,just run once, and maybe no deadline*/
-        activate_task(task);
+        if(!activate_task(task)){while(1);}
     }
 
     return 1;
@@ -263,18 +302,28 @@ int activate_task(Lito_task* task)
         {
             return 0;
         }
-
         tcb->pid = task->pid;
-        tcb->tcb = hardware_TCB_init(function_shell,task);
-        tcb->status = RUNNING;
-        tcb->priority = task->priority;
         tcb->task = task;
+        tcb->tcb = hardware_TCB_init(function_shell,task);
         TCB_list_insert(tcb);
-
-        ///This is for debug
-        tt = (TCB*)tcb->tcb;
-        far_jump(0,tt->selector);
     }
+    else
+    {
+        tcb = task->tcb;
+    }
+
+    tcb->status = RUNNING;
+
+    // Here we should use the scheduling algorithm decides priority.
+    tcb->priority = task->priority;
+
+    ///////////////////////////////////////////////////////////////
+    ///This is for debug
+    tt = (TCB*)tcb->tcb;
+    far_jump(0,tt->selector);
+    ///////////////////////////////////////////////////////////////
+
+    // Insert intt running queue
 
     return 0;
 }

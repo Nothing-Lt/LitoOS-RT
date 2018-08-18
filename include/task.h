@@ -25,33 +25,40 @@
     unsigned          period;    // what the period of this task
     unsigned          extra;     // External event IRQ line number and something else 
     void*             function;  // Entry point of this task
-    struct Lito_TCB*  tcb;       //
-    struct Lito_task* next;      //
+    struct Lito_TCB*  tcb;       // Point to TCB instance 
+    struct Lito_task* next;      // Point to next task, till now, it's used by interrupt handler
  }Lito_task;
 
 
 /*
   This structure is for task control block. 
   When you trying to transplant Lito to other platform.
-
-  ********modify this**********
-  Especially for the first element.
 */
 typedef struct Lito_TCB
 {
     unsigned         pid;  
     unsigned         status;         // process status: running, waiting, hanging
     unsigned         compution_time; // rest compution time
-    unsigned         priority;       // dynamic priority
-    unsigned         deadline;       // Absolute deadline
-    Lito_task*       task;           //
+    unsigned         priority;       // dynamic priority,this priority will be decide in running time
+    unsigned         deadline;       // Absolute deadline, will be decided in running time
+    Lito_task*       task;           // Point to the task instance, 
     void*            tcb;            // When you transplant this system to other platform, modify this!!!!!!!!
     struct Lito_TCB* next;           // next TCB of process
 }Lito_TCB;
 
 /*
-Use a queue to manage those tasks,
-a task structure represent a task.
+  This structrue is for running queue,
+  those scheduling algorithm implemented in schedule.c,
+  would operate on this queue. 
+*/
+typedef struct
+{
+}Lito_running_queue;
+
+
+/*
+  Use a queue to manage those tasks,
+  a task structure represent a task.
 */
 typedef struct 
 {
@@ -60,9 +67,9 @@ typedef struct
 }task_list;
 
 /*
-Use a queue to manage the TCB,
-a TCB represent a job.
-//Here we should know the difference between job and task
+  Use a queue to manage the TCB,
+  a TCB represent a job.
+  //Here we should know the difference between job and task
 */
 typedef struct
 {
@@ -76,6 +83,9 @@ int TCB_list_init();
 /*Initial the task list*/
 int task_list_init();
 
+/*Initial the running queue*/
+int running_queue_init();
+
 /*Insert new TCB into TCB list*/
 int TCB_list_insert(Lito_TCB* tcb);
 
@@ -87,6 +97,12 @@ int task_list_insert(Lito_task* task);
 
 /*Remove a task from task list,indexed by pid*/
 int task_list_remove(unsigned pid);
+
+/*Insert TCB into running queue*/
+int running_queue_insert(Lito_TCB* tcb);
+
+/*Remove TCB from running queue*/
+int running_queue_remove(unsigned pid);
 
 /*Create new task*/
 unsigned create_task(Lito_task* task);

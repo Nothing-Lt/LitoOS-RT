@@ -13,7 +13,7 @@
 */
 
 #define MIN_BLOCK_SIZE 0x10
-#define DIFF(a,b) (unsigned)(&(((a*)0)->b))-(unsigned)(a*)0
+#define DIFF(a,b) (unsigned)(&(((a*)0)->b))-0
 
 typedef struct
 {

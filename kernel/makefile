@@ -7,5 +7,5 @@ kernel:
 	$(GCC) ../task.o task.c
 	$(GCC) ../memory.o memory.c
 	$(GCC) ../message.o message.c
-	$(GCC) ../schedual.o schedual.c
+	$(GCC) ../schedule.o schedule.c
 	$(GCC) ../interrupt.o interrupt.c
