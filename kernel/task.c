@@ -8,6 +8,7 @@
 
 task_list* task_l;
 TCB_list* TCB_l;
+Lito_running_queue* running_queue;
 
 unsigned pid;
 
@@ -76,7 +77,21 @@ Return value:
 */
 int running_queue_init()
 {
-    return 0;
+    int i;
+
+    running_queue = (Lito_running_queue*)malloc(sizeof(Lito_running_queue));
+    if(running_queue == NULL)
+    {
+        return 0;
+    }
+
+    for(i=0;i<MAX_PRIORITY;i++)
+    {
+        running_queue->list[i] = NULL;
+    }
+    running_queue->tcb_number = 0;
+
+    return 1;
 }
 
 /*
@@ -119,29 +134,30 @@ Remove an element from TCB list
 Parameter:
     process id of the element you want to remove
 Retuen value:
-    0: Failed
-    1: Successed
+    NULL: Failed
+    Pointer of TCb: Successed
 */
-int TCB_list_remove(unsigned pid)
+Lito_TCB* TCB_list_remove(unsigned pid)
 {
     int i;
+    Lito_TCB* result = NULL;
  
     if(TCB_l==NULL||pid==0)
     {
-        return 0;
+        return NULL;
     }
 
     for(i=0;i<MAX_TCB_NUMBER;i++)
     {
         if(TCB_l->list[i]!=NULL && TCB_l->list[i]->pid==pid)
         {
-            free(TCB_l->list[i]);
+            result = TCB_l->list[i];
             TCB_l->list[i]=NULL;
             TCB_l->tcb_number--;
-            return 1;
+            return result;
         }
     }
-    return 0;
+    return NULL;
 }
 
 /*
@@ -184,28 +200,31 @@ Remove an element from task_list
 Parameter:
     process id of the element you want to remove
 Return value:
-    0: Failed
-    1: Successed
+    NULL: Failed
+    Pointer of Lito_task: Successed
 */
-int task_list_remove(unsigned pid)
+Lito_task* task_list_remove(unsigned pid)
 {
     int i;
+    Lito_task* result = NULL;
+
+
     if(task_l==NULL||pid==0)
     {
-        return 0;
+        return NULL;
     }
 
     for(i=0;i<MAX_TASK_NUMBER;i++)
     {
         if(task_l->list[i]!=NULL && task_l->list[i]->pid==pid)
         {
-            free(task_l->list[i]);
+            result = task_l->list[i];
             task_l->list[i]=NULL;
             task_l->task_number--;
-            return 1;
+            return result;
         }
     }
-    return 0;
+    return NULL;
 }
 
 /*
@@ -218,7 +237,22 @@ Return value:
 */
 int running_queue_insert(Lito_TCB* tcb)
 {
-    return 0;
+    int i;
+    unsigned tmp_priority = 0;
+    TCB* tmp_tcb = NULL;
+    
+    // Security check
+    if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY)
+    {
+        return 0;
+    }
+
+    // Insert into running queue
+    tmp_priority = tcb->priority;
+    tcb->next = running_queue->list[tmp_priority];
+    running_queue->list[tmp_priority] = tcb;
+    running_queue->tcb_number++;
+    return 1;
 }
 
 /*
@@ -226,12 +260,36 @@ Remove the TCB from running queue
 Parameter:
     pid: the pid of TCB which you want to remvoe from running queue
 Return value:
-    0: Failed
-    1: Susscced
+    NULL: Failed
+    Pointer of Lito_TCB: Susscced
 */
-int running_queue_remove(unsigned pid)
+Lito_TCB* running_queue_remove(unsigned pid)
 {
-    return 0;
+    int   i = 0; 
+    Lito_TCB*  result      = NULL;
+    Lito_TCB*  tcb_tmp     = NULL;
+    Lito_TCB** tcb_pointer = NULL;
+
+    if(running_queue == NULL||running_queue->tcb_number==0)
+    {
+        return NULL;
+    }
+
+    for(i=0;i<MAX_PRIORITY;i++)
+    {
+        tcb_pointer = &(running_queue->list[i]);
+        for(;*tcb_pointer!=NULL;tcb_pointer=&((*tcb_pointer)->next))
+        {
+            if((*tcb_pointer)->pid==pid)
+            {
+                result       = *tcb_pointer;
+                *tcb_pointer = result->next;
+                return result;
+            }
+        }
+    }
+    
+    return NULL;
 }
 
 /* 

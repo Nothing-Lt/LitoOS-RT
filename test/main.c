@@ -21,6 +21,8 @@ int main()
 
     task_list_init();
     TCB_list_init();
+    running_queue_init();
+    
     task = (Lito_task*)malloc(sizeof(Lito_task));
     task->flag = NORMAL_TASK;
     task->pid=++pid;
