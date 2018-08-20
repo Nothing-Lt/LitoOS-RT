@@ -1,7 +1,8 @@
 #ifndef TASK_H
 #define TASK_H
 
-#define MAX_TCB_NUMBER 128
+#define MAX_PRIORITY      128
+#define MAX_TCB_NUMBER    128
 #define MAX_TASK_NUMBER MAX_TCB_NUMBER
 
 #define TG_CLOCK_EVENT    0x1   //For Periodic JOBs
@@ -47,16 +48,6 @@ typedef struct Lito_TCB
 }Lito_TCB;
 
 /*
-  This structrue is for running queue,
-  those scheduling algorithm implemented in schedule.c,
-  would operate on this queue. 
-*/
-typedef struct
-{
-}Lito_running_queue;
-
-
-/*
   Use a queue to manage those tasks,
   a task structure represent a task.
 */
@@ -77,6 +68,18 @@ typedef struct
     unsigned tcb_number;
 } TCB_list;
 
+/*
+  This structrue is for running queue,
+  those scheduling algorithm implemented in schedule.c,
+  would operate on this queue. 
+*/
+typedef struct
+{
+    Lito_TCB* list[MAX_PRIORITY];
+    unsigned tcb_number;
+}Lito_running_queue;
+
+
 /*Initial the TCB list*/
 int TCB_list_init();
 
@@ -90,19 +93,19 @@ int running_queue_init();
 int TCB_list_insert(Lito_TCB* tcb);
 
 /*Remove a TCB from TCB list, indexed by pid*/
-int TCB_list_remove(unsigned pid);
+Lito_TCB* TCB_list_remove(unsigned pid);
 
 /*Insert a task into task list*/
 int task_list_insert(Lito_task* task);
 
 /*Remove a task from task list,indexed by pid*/
-int task_list_remove(unsigned pid);
+Lito_task* task_list_remove(unsigned pid);
 
 /*Insert TCB into running queue*/
 int running_queue_insert(Lito_TCB* tcb);
 
 /*Remove TCB from running queue*/
-int running_queue_remove(unsigned pid);
+Lito_TCB* running_queue_remove(unsigned pid);
 
 /*Create new task*/
 unsigned create_task(Lito_task* task);
