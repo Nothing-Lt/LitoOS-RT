@@ -14,18 +14,18 @@
    Need to design how to quit the execution and how to remove itself from the TCB_list or the task_list.
    Need to design a function to set the task status.
 3. For messgae.c
-   Maybe it's time to consider designing the IPC. 
+   Maybe it's time to consider for designing the IPC. 
 
 
 2018/8/20
 1. In task.h
    Designed the running queue,
    (1)It's a hash table,hash key is the priority of job
-   (2)Use linkedlist to solve Hash Collisions
+   (2)Use linkedlist to solve "Hash Collisions"
 2. In task.c
    Completed the running queue inilization,insertion and remvoe function.
    Changed the interface of task_list_remove and TCB_list_remove fucntion,make them return the removed element.
 
-   Next step, reconfig the activate_task function,let it call running_queue_insert function
+   Next step, reconfig the activate_task function,let it calls running_queue_insert function
 
 

@@ -2,8 +2,9 @@
 #define TASK_H
 
 #define MAX_PRIORITY      128
+#define MIN_PRIORITY      1
 #define MAX_TCB_NUMBER    128
-#define MAX_TASK_NUMBER MAX_TCB_NUMBER
+#define MAX_TASK_NUMBER   MAX_TCB_NUMBER
 
 #define TG_CLOCK_EVENT    0x1   //For Periodic JOBs
 #define TG_EXTERNAL_EVENT 0x2   //For Aperiodic JOBs

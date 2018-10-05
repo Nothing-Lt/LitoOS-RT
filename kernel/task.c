@@ -25,10 +25,7 @@ int task_list_init()
     int i;
 
     task_l = (task_list*)malloc(sizeof(task_list));
-    if(task_l==NULL)
-    {
-        return 0;
-    }
+    if(task_l==NULL){return 0;}
     
     task_l->task_number=0;
     for(i=0; i<MAX_TASK_NUMBER; i++)
@@ -53,10 +50,7 @@ int TCB_list_init()
     int i;
     
     TCB_l = (TCB_list*)malloc(sizeof(TCB_list));
-    if(TCB_l==NULL)
-    {
-        return 0;
-    }
+    if(TCB_l==NULL){return 0;}
 
     TCB_l->tcb_number=0;
     for(i=0; i<MAX_TCB_NUMBER; i++)
@@ -80,10 +74,7 @@ int running_queue_init()
     int i;
 
     running_queue = (Lito_running_queue*)malloc(sizeof(Lito_running_queue));
-    if(running_queue == NULL)
-    {
-        return 0;
-    }
+    if(running_queue == NULL){return 0;}
 
     for(i=0;i<MAX_PRIORITY;i++)
     {
@@ -106,15 +97,9 @@ int TCB_list_insert(Lito_TCB* tcb)
 {
     int i;
 
-    if(TCB_l==NULL||tcb==NULL)
-    {
-        return 0;
-    }
+    if(TCB_l==NULL||tcb==NULL){return 0;}
 
-    if(TCB_l->tcb_number >= MAX_TCB_NUMBER)
-    {
-        return 0;
-    }
+    if(TCB_l->tcb_number >= MAX_TCB_NUMBER){return 0;}
     
     for(i=0;i<MAX_TCB_NUMBER;i++)
     {
@@ -142,10 +127,7 @@ Lito_TCB* TCB_list_remove(unsigned pid)
     int i;
     Lito_TCB* result = NULL;
  
-    if(TCB_l==NULL||pid==0)
-    {
-        return NULL;
-    }
+    if(TCB_l==NULL||pid==0){return NULL;}
 
     for(i=0;i<MAX_TCB_NUMBER;i++)
     {
@@ -172,15 +154,9 @@ int task_list_insert(Lito_task* task)
 {
     int i;
 
-    if(task_l==NULL||task==NULL)
-    {
-        return 0;
-    }
+    if(task_l==NULL||task==NULL){return 0;}
 
-    if(task_l->task_number >= MAX_TASK_NUMBER)
-    {
-        return 0;
-    }
+    if(task_l->task_number >= MAX_TASK_NUMBER){return 0;}
 
     for(i=0;i<MAX_TASK_NUMBER;i++)
     {
@@ -209,10 +185,7 @@ Lito_task* task_list_remove(unsigned pid)
     Lito_task* result = NULL;
 
 
-    if(task_l==NULL||pid==0)
-    {
-        return NULL;
-    }
+    if(task_l==NULL||pid==0){return NULL;}
 
     for(i=0;i<MAX_TASK_NUMBER;i++)
     {
@@ -237,18 +210,15 @@ Return value:
 */
 int running_queue_insert(Lito_TCB* tcb)
 {
-    int i;
+    int                 i = 0;
     unsigned tmp_priority = 0;
-    TCB* tmp_tcb = NULL;
+    TCB*          tmp_tcb = NULL;
     
     // Security check
-    if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY)
-    {
-        return 0;
-    }
+    if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY){return 0;}
 
     // Insert into running queue
-    tmp_priority = tcb->priority;
+    tmp_priority = tcb->priority-1;
     tcb->next = running_queue->list[tmp_priority];
     running_queue->list[tmp_priority] = tcb;
     running_queue->tcb_number++;
@@ -270,10 +240,7 @@ Lito_TCB* running_queue_remove(unsigned pid)
     Lito_TCB*  tcb_tmp     = NULL;
     Lito_TCB** tcb_pointer = NULL;
 
-    if(running_queue == NULL||running_queue->tcb_number==0)
-    {
-        return NULL;
-    }
+    if(running_queue == NULL||running_queue->tcb_number==0){return NULL;}
 
     for(i=0;i<MAX_PRIORITY;i++)
     {
@@ -304,10 +271,7 @@ unsigned create_task(Lito_task* task)
     unsigned IRQ_line = 0;
     Lito_TCB *tcb = NULL;
 
-    if(task == NULL)
-    {
-        return 0;
-    }
+    if(task == NULL){return 0;}
 
     task_list_insert(task);
 
@@ -326,7 +290,8 @@ unsigned create_task(Lito_task* task)
     }
     else if(task->flag&NORMAL_TASK)
     {
-        /* Those normal tasks,just run once, and maybe no deadline*/
+        /* Those normal tasks,just run once, and maybe no deadline,
+           start them immediately*/
         if(!activate_task(task)){while(1);}
     }
 
@@ -344,31 +309,23 @@ Return value:
 int activate_task(Lito_task* task)
 {
     Lito_TCB* tcb = NULL;
-    TCB* tt = NULL;
+    TCB*       tt = NULL;
 
-    if(task==NULL || task_l==NULL || TCB_l==NULL)
-    {
-        return 0;
-    }
+    if(task==NULL || task_l==NULL || TCB_l==NULL){return 0;}
   
     // No TCB belongs to this task in TCB_list, so alloc one,
     // fill it and insert into TCb_list and set something.
     if(task->tcb == NULL)
     {
         tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
-        if(tcb == NULL)
-        {
-            return 0;
-        }
+        if(tcb == NULL){return 0;}
+
         tcb->pid = task->pid;
         tcb->task = task;
         tcb->tcb = hardware_TCB_init(function_shell,task);
         TCB_list_insert(tcb);
     }
-    else
-    {
-        tcb = task->tcb;
-    }
+    else{tcb = task->tcb;}
 
     tcb->status = RUNNING;
 
@@ -376,12 +333,13 @@ int activate_task(Lito_task* task)
     tcb->priority = task->priority;
 
     ///////////////////////////////////////////////////////////////
-    ///This is for debug
+    ///This is for debugging
     tt = (TCB*)tcb->tcb;
     far_jump(0,tt->selector);
     ///////////////////////////////////////////////////////////////
 
-    // Insert intt running queue
+    // Insert into running queue
+    running_queue_insert(tcb);
 
     return 0;
 }
@@ -392,10 +350,13 @@ int reset_task(Lito_task* task)
 }
 
 /*
-This function is a "shell",
-It's like a container for the job function
+This function is a "shell"(NOT the shell in linux),
+It's like a container for the function of job,
 and at the end of this "shell function",
 the TCB of this job will be reset.
+The reason for designing this, 
+developer only need to consider how to implement their function, and set the flag correctly,
+leave these "reset" things to system.
 Parameter:
     A pointor point to a Lito_task structure
 Retuen value:
@@ -404,13 +365,12 @@ Retuen value:
 void function_shell(Lito_task* task)
 {
     void (*job)() = NULL;
-    void* tmp     = task->function; 
+    void* tmp     = NULL;
 
-    if(task!=NULL && tmp!=NULL)
-    {
-        job = (void (*)())tmp;
-        job();
-    }
+    if(task==NULL || task->function==NULL){return;}
+
+    job = (void (*)())task->function;
+    job();
     
     if(task->flag&TG_CLOCK_EVENT)
     {

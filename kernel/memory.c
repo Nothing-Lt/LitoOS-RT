@@ -87,10 +87,7 @@ int free(void* add)
     unused_block* new_block=NULL;
     unused_block* temp = NULL;
  
-    if(add==NULL || unused_block_list == NULL)
-    {
-        return 0;
-    }
+    if(add==NULL || unused_block_list == NULL){return 0;}
 
     block = (used_block*)((long unsigned)add-DIFF(used_block,buff));
     new_block = (unused_block*)block;

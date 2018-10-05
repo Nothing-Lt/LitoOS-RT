@@ -52,10 +52,7 @@ int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev)
 
 int set_trigger_IRQ(unsigned irq_line,unsigned flag,Lito_task* task)
 {
-    if(irq_line>=IRQLINE_NUMBER || task==NULL)
-    {
-        return 0;
-    }
+    if(irq_line>=IRQLINE_NUMBER || task==NULL){return 0;}
 
     task->next = (Lito_task*)(IRQ_desc_table[irq_line].minor_table[0].dev);
     IRQ_desc_table[irq_line].minor_table[0].dev = (void*)task;
@@ -73,12 +70,9 @@ void default_handler_hard(unsigned irq)
     //Message msg;
 	
 	// check if this irq is legle 
-    if( irq<REUSEABLE_IRQLINE || irq>IRQLINE_NUMBER )
-    {
-    	return;
-    }
+    if( irq<REUSEABLE_IRQLINE || irq>IRQLINE_NUMBER ){return;}
     
-    // Activate those tasks which are waitting this interrupt.
+    // Activate those tasks which are waitting for this interrupt.
     // Those tasks waked up is triggered by external event.
     // For each IRQ line, the first minor descriptor (minor_table[0]) is for Keeping the task structure,
     // for those tasks request for this external event

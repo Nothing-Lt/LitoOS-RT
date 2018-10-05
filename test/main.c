@@ -24,11 +24,12 @@ int main()
     running_queue_init();
     
     task = (Lito_task*)malloc(sizeof(Lito_task));
-    task->flag = NORMAL_TASK;
-    task->pid=++pid;
+    task->flag     = NORMAL_TASK;
+    task->pid      = ++pid;
+    task->priority = MAX_PRIORITY-1; 
     task->function = (void*)function;
-    task->next = NULL;
-    task->tcb = NULL;
+    task->next     = NULL;
+    task->tcb      = NULL;
     create_task(task);
 
     while(1);
