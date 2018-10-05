@@ -215,13 +215,14 @@ int running_queue_insert(Lito_TCB* tcb)
     TCB*          tmp_tcb = NULL;
     
     // Security check
-    if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY){return 0;}
+    if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY || tcb->priority<1){return 0;}
 
     // Insert into running queue
     tmp_priority = tcb->priority-1;
     tcb->next = running_queue->list[tmp_priority];
     running_queue->list[tmp_priority] = tcb;
     running_queue->tcb_number++;
+    
     return 1;
 }
 
