@@ -25,12 +25,13 @@ int task_list_init()
     int i;
 
     task_l = (task_list*)malloc(sizeof(task_list));
-    if(task_l==NULL){return 0;}
+    if(task_l == NULL){return 0;}
     
-    task_l->task_number=0;
+    pid                 = 0;
+    task_l->task_number = 0;
     for(i=0; i<MAX_TASK_NUMBER; i++)
     {
-        task_l->list[i]=NULL;
+        task_l->list[i] = NULL;
     }
 
     return 1;
@@ -50,9 +51,9 @@ int TCB_list_init()
     int i;
     
     TCB_l = (TCB_list*)malloc(sizeof(TCB_list));
-    if(TCB_l==NULL){return 0;}
+    if(TCB_l == NULL){return 0;}
 
-    TCB_l->tcb_number=0;
+    TCB_l->tcb_number = 0;
     for(i=0; i<MAX_TCB_NUMBER; i++)
     {
         TCB_l->list[i] = NULL;
@@ -97,13 +98,13 @@ int TCB_list_insert(Lito_TCB* tcb)
 {
     int i;
 
-    if(TCB_l==NULL||tcb==NULL){return 0;}
+    if(TCB_l==NULL || tcb==NULL){return 0;}
 
     if(TCB_l->tcb_number >= MAX_TCB_NUMBER){return 0;}
     
     for(i=0;i<MAX_TCB_NUMBER;i++)
     {
-        if(TCB_l->list[i]==NULL)
+        if(TCB_l->list[i] == NULL)
         {
             TCB_l->list[i] = tcb;
             TCB_l->tcb_number++;
@@ -127,14 +128,14 @@ Lito_TCB* TCB_list_remove(unsigned pid)
     int i;
     Lito_TCB* result = NULL;
  
-    if(TCB_l==NULL||pid==0){return NULL;}
+    if(TCB_l==NULL || pid==0){return NULL;}
 
     for(i=0;i<MAX_TCB_NUMBER;i++)
     {
         if(TCB_l->list[i]!=NULL && TCB_l->list[i]->pid==pid)
         {
             result = TCB_l->list[i];
-            TCB_l->list[i]=NULL;
+            TCB_l->list[i] = NULL;
             TCB_l->tcb_number--;
             return result;
         }
@@ -154,13 +155,13 @@ int task_list_insert(Lito_task* task)
 {
     int i;
 
-    if(task_l==NULL||task==NULL){return 0;}
+    if(task_l==NULL || task==NULL){return 0;}
 
     if(task_l->task_number >= MAX_TASK_NUMBER){return 0;}
 
     for(i=0;i<MAX_TASK_NUMBER;i++)
     {
-        if(task_l->list[i]==NULL)
+        if(task_l->list[i] == NULL)
         {
             task_l->list[i] = task;
             task_l->task_number++;
@@ -185,14 +186,14 @@ Lito_task* task_list_remove(unsigned pid)
     Lito_task* result = NULL;
 
 
-    if(task_l==NULL||pid==0){return NULL;}
+    if(task_l==NULL || pid==0){return NULL;}
 
     for(i=0;i<MAX_TASK_NUMBER;i++)
     {
         if(task_l->list[i]!=NULL && task_l->list[i]->pid==pid)
         {
             result = task_l->list[i];
-            task_l->list[i]=NULL;
+            task_l->list[i] = NULL;
             task_l->task_number--;
             return result;
         }
@@ -222,7 +223,7 @@ int running_queue_insert(Lito_TCB* tcb)
     tcb->next = running_queue->list[tmp_priority];
     running_queue->list[tmp_priority] = tcb;
     running_queue->tcb_number++;
-    
+
     return 1;
 }
 
