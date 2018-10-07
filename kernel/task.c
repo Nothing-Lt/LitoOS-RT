@@ -185,7 +185,6 @@ Lito_task* task_list_remove(unsigned pid)
     int i;
     Lito_task* result = NULL;
 
-
     if(task_l==NULL || pid==0){return NULL;}
 
     for(i=0;i<MAX_TASK_NUMBER;i++)
@@ -322,9 +321,9 @@ int activate_task(Lito_task* task)
         tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
         if(tcb == NULL){return 0;}
 
-        tcb->pid = task->pid;
+        tcb->pid  = task->pid;
         tcb->task = task;
-        tcb->tcb = hardware_TCB_init(function_shell,task);
+        tcb->tcb  = hardware_TCB_init(function_shell,task);
         TCB_list_insert(tcb);
     }
     else{tcb = task->tcb;}
@@ -348,7 +347,13 @@ int activate_task(Lito_task* task)
 
 int reset_task(Lito_task* task)
 {
-    return 0;
+    if(task == NULL){return 0;}
+
+    if(task->tcb == NULL){return 0;}
+
+    hardware_TCB_reset((TCB*)task->tcb->tcb,task->function);
+    
+    return 1;
 }
 
 /*
@@ -366,8 +371,9 @@ Retuen value:
 */
 void function_shell(Lito_task* task)
 {
-    void (*job)() = NULL;
-    void* tmp     = NULL;
+    void (*job)()   = NULL;
+    void* tmp       = NULL;
+    Lito_TCB* tcb   = NULL;
 
     if(task==NULL || task->function==NULL){return;}
 
@@ -379,17 +385,28 @@ void function_shell(Lito_task* task)
         // Reset the status of this job
         // Let this job wait the clock event again
         if(!set_trigger_IRQ(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
+        reset_task(task);
     }
     else if(task->flag&TG_EXTERNAL_EVENT)
     {
         // Reset the status of this job
         // Let this job wait the external event again
         if(!set_trigger_IRQ(task->extra,task->flag,task)){while(1);}
+        reset_task(task);
     }
-    else
+    else // just a regular job,user just want it run once.
     {
         // Insert some code to exit from TCB list
         // Insert some code to exit from task list
+        running_queue_remove(task->pid);
+
+        tcb  = TCB_list_remove(task->pid);
+        if(tcb == NULL){while(1);}
+        else{free(tcb);}
+
+        task = task_list_remove(task->pid);
+        if(task == NULL){while(1);}
+        else{free(task);}
     }
     //Here must switch task, otherwise it will be a terrible mitstake 
 

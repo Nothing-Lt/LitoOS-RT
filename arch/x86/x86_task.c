@@ -9,32 +9,20 @@ extern gdt* gdt_addr;
 
 void* hardware_TCB_init(void* function,void* parameter)
 {
-    TCB* tcb = NULL;
-    void* esp = NULL;
-    unsigned gdt_selector=0;
+    TCB*             tcb  = NULL;
+    void*            esp  = NULL;
+    unsigned gdt_selector = 0;
 
-    if(function==NULL)
-    {
-        return NULL;
-    }
+    if(function == NULL){return NULL;}
 
     esp = malloc(2*SIZE_OF_PAGE);
-    if(esp==NULL)
-    {
-        return NULL;
-    }
+    if(esp==NULL){return NULL;}
     
     tcb = malloc(sizeof(TCB));
-    if(tcb == NULL)
-    {
-        return NULL;
-    }
+    if(tcb == NULL){return NULL;}
 
     gdt_selector = find_empty_gdt();
-    if(gdt_selector == 0)
-    {
-        return NULL;
-    }
+    if(gdt_selector == 0){return NULL;}
     
     tcb->tasc.cr3 = PAGE_TABLE_ADD;
     tcb->tasc.eip = (unsigned)function;
@@ -51,9 +39,18 @@ void* hardware_TCB_init(void* function,void* parameter)
     tcb->tasc.iomap_base = NORMAL_IOMAPBASE;
 
     tcb->selector = gdt_selector<<3;
+    tcb->user_esp = (unsigned)esp;
     set_gdt(&gdt_addr[gdt_selector],(unsigned)&(tcb->tasc),TSS_SIZE,TSS_DESCRIB);
 
     *((void**)(tcb->tasc.esp+sizeof(void*))) = parameter;
 
     return (void*)tcb;
+}
+
+void hardware_TCB_reset(TCB* tcb,void* parameter)
+{
+    if(tcb == NULL){return;}
+
+    tcb->tasc.ebp = tcb->tasc.esp = tcb->user_esp + 2*SIZE_OF_PAGE - 2*sizeof(void*);
+    *((void**)(tcb->tasc.esp+sizeof(void*))) = parameter;
 }

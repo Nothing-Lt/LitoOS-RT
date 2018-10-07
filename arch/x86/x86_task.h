@@ -17,4 +17,6 @@ typedef struct TCB
 
 void* hardware_TCB_init(void* function,void* parameter);
 
+void hardware_TCB_reset(TCB* tcb,void* parameter);
+
 #endif
