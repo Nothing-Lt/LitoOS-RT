@@ -71,11 +71,11 @@ void hlt();
 
 /* enable the IRQ */
 void sti();
-#define x86_enable_IRQ()  sti()
+#define LT_IRQ_enable()  sti()
 
 /* disable the IRQ */
 void cli();
-#define x86_disable_IRQ() cli()
+#define LT_IRQ_disable() cli()
 
 /* load gdt table to lgdt register*/
 void lgdt(int limit,int base);
@@ -147,10 +147,10 @@ void set_idt(idt* i,unsigned handler_add,int selector  ,int ar);
 unsigned find_empty_gdt();
 
 /* initial gdt and idt table and load address in gdt idt register */
-void init_gdt_idt();
+void gdt_idt_init();
 
 /* initial x86 platform */
-void x86_init_hardware();
+void LT_hardware_init();
 
 // save the driver list into memory
 void init_driver_list();

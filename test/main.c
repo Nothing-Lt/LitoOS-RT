@@ -1,27 +1,19 @@
-#include <interrupt.h>
-#include <memory.h>
-#include <task.h>
-#include "../arch/x86/x86.h"
-
-extern unsigned memory_size;
-extern unsigned free_memory_add;
+#include <LitoOS.h>
 
 extern unsigned pid;
 
-void function();
+void function()
+{
+    int i;
+
+    for(i=0;i<20;);
+}
 
 int main()
 {
-    Lito_task* task;
-    disable_IRQ();        //This function is offered by LitoOS
-    x86_init_hardware();  //Hardware initialze 
+    Lito_task* task = NULL;
 
-    init_memory_block(free_memory_add,memory_size-free_memory_add); //LitoOS memory management 
-    IRQ_desc_table_init();                                          //LitoOS external IRQ table initialize
-
-    task_list_init();
-    TCB_list_init();
-    running_queue_init();
+    LT_OS_init();
     
     task = (Lito_task*)malloc(sizeof(Lito_task));
     task->flag     = NORMAL_TASK;
@@ -32,13 +24,8 @@ int main()
     task->tcb      = NULL;
     create_task(task);
 
+    LT_OS_start();
+
     while(1);
-    enable_IRQ();
-}
-
-void function()
-{
-    int i;
-
-    for(i=0;i<20;);
+    LT_IRQ_enable();
 }

@@ -10,17 +10,17 @@ extern unsigned memory_size;
 gdt* gdt_addr;
 idt* idt_addr;
 
-void x86_init_hardware()
+void LT_hardware_init()
 {
     kernel_size =get_memory((void*)KERNEL_SIZE_ADD)<<4;
-    init_gdt_idt(kernel_size);
+    gdt_idt_init(kernel_size);
 
     memory_size =check_memory();
 
     x86_set_page(memory_size);
 }
 
-void init_gdt_idt(unsigned kernel_size)
+void gdt_idt_init(unsigned kernel_size)
 {
     int i;
     gdt_addr=(gdt*)GDT_ADD;

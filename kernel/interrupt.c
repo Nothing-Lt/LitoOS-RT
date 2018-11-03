@@ -28,18 +28,6 @@ void IRQ_desc_table_init()
     }
 }
 
-
-
-void enable_IRQ()
-{
-    x86_enable_IRQ();
-}
-
-void disable_IRQ()
-{
-    x86_disable_IRQ();
-}
-
 int sys_regist_IRQ(unsigned irq_line,unsigned flag,void* dev,unsigned priority)
 {
     return -1;
