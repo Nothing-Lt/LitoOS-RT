@@ -210,9 +210,7 @@ Return value:
 */
 int running_queue_insert(Lito_TCB* tcb)
 {
-    int                 i = 0;
     unsigned tmp_priority = 0;
-    TCB*          tmp_tcb = NULL;
     
     // Security check
     if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY || tcb->priority<1){return 0;}
@@ -238,7 +236,6 @@ Lito_TCB* running_queue_remove(unsigned pid)
 {
     int   i = 0; 
     Lito_TCB*  result      = NULL;
-    Lito_TCB*  tcb_tmp     = NULL;
     Lito_TCB** tcb_pointer = NULL;
 
     if(running_queue == NULL||running_queue->tcb_number==0){return NULL;}
@@ -269,8 +266,6 @@ Return value:
 */
 unsigned create_task(Lito_task* task)
 {
-    unsigned IRQ_line = 0;
-    Lito_TCB *tcb = NULL;
 
     if(task == NULL){return 0;}
 
@@ -372,8 +367,7 @@ Retuen value:
 void function_shell(Lito_task* task)
 {
     void (*job)()   = NULL;
-    void* tmp       = NULL;
-    Lito_TCB* tcb   = NULL;
+    Lito_TCB*   tcb = NULL;
 
     if(task==NULL || task->function==NULL){return;}
 

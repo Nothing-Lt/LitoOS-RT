@@ -1,6 +1,6 @@
 NO_PIE=-fno-pie
 GCC=gcc 
-CFLAG=-I ../../../include $(NO_PIE) -m32 -c -o 
+CFLAG=-Wall -I ../../../include $(NO_PIE) -m32 -c -o 
 NASM=nasm -f elf -o
 OBJECTS=hd_interrupt.o hd_interrupt_lib.o
 

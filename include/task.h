@@ -1,6 +1,8 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <message.h>
+
 #define MAX_PRIORITY      128
 #define MIN_PRIORITY      1
 #define MAX_TCB_NUMBER    128
@@ -43,6 +45,7 @@ typedef struct Lito_TCB
     unsigned         compution_time; // rest compution time
     unsigned         priority;       // dynamic priority,this priority will be decide in running time
     unsigned         deadline;       // Absolute deadline, will be decided in running time
+    MESSAGE*         msg;
     Lito_task*       task;           // Point to the task instance, 
     void*            tcb;            // When you transplant this system to other platform, modify this!!!!!!!!
     struct Lito_TCB* next;           // next TCB of process
