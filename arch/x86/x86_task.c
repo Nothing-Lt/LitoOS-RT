@@ -18,7 +18,7 @@ void* hardware_TCB_init(void* function,void* parameter)
     esp = malloc(2*SIZE_OF_PAGE);
     if(esp==NULL){return NULL;}
     
-    tcb = malloc(sizeof(TCB));
+    tcb = (TCB*)malloc(sizeof(TCB));
     if(tcb == NULL){return NULL;}
 
     gdt_selector = find_empty_gdt();
