@@ -24,23 +24,23 @@ void gdt_idt_init(unsigned kernel_size)
 {
     int i;
     gdt_addr=(gdt*)GDT_ADD;
- 
+
     for( i=0 ; i<ELE_NUM_IN_GDT_TBL ; i++)
     {
         set_gdt(&gdt_addr[i],0,0,0);
     }
- 
+
     set_gdt(&gdt_addr[1],0,X86_MAX_SIZE,DEFAULT_DESCRIP|SEGMENT_PRESENT|CODE_DATA_DESCRIP|DATA_DESCRIP);
     set_gdt(&gdt_addr[2],0,X86_MAX_SIZE,DEFAULT_DESCRIP|SEGMENT_PRESENT|CODE_DATA_DESCRIP|CODE_DESCRIP);
     lgdt(GDT_LENGTH,GDT_ADD);
-	
+
     free_memory_add=(GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt));
-	
+
     if(((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xf)!=0)
     {
         free_memory_add=(((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xfffffff0)+8);
     }
-	
+
     idt_addr=(idt*)free_memory_add;
 
     set_idt(&idt_addr[0x00],(unsigned)asm_handle0x00,CODE_SELECTOR,INTERRUPT_DESCRIP);
