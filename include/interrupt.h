@@ -23,13 +23,13 @@ typedef struct
     unsigned registed_number;
 }IRQ_desc;
 
-void IRQ_desc_table_init();
+void LT_IRQ_desc_table_init();
 
-int sys_regist_IRQ(unsigned irq_line,unsigned flag, void* dev,unsigned priority);
+int sys_IRQLINE_regist(unsigned irq_line,unsigned flag, void* dev,unsigned priority);
 
-int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev);
+int sys_IRQLINE_remove(unsigned irq_line,unsigned minor,void* dev);
 
-int set_trigger_IRQ(unsigned irq_line,unsigned flag,Lito_task* task);
+int IRQ_trigger_set(unsigned irq_line,unsigned flag,Lito_task* task);
 
 void enable_IRQ();
 

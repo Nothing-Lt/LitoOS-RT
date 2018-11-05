@@ -22,18 +22,13 @@ void default_handler_soft(unsigned error_ip,unsigned error_code)
 
 // set the handler for No.irq line handler
 // this function only for system, not for user program
-int set_IRQLINE_handler(unsigned irq,void* function)
+int IRQLINE_handler_set(unsigned irq,void* function)
 {
-    if(function==NULL)             // NULL pointer is not allowed
-    {
-        return 0;
-    }
-
-
-    if(irq>=IRQLINE_NUMBER)       // out of range of IRQ handler table
-    {
-        return 0;
-    }
+    // out of range of IRQ handler table
+    if(irq>=IRQLINE_NUMBER){return 0;}
+    
+    // NULL pointer is not allowed
+    if(function==NULL){return 0;}
 
     handler_list.function_pointer[irq]=function;
 
@@ -51,7 +46,7 @@ int remove_IRQLINE_handler(unsigned irq)
 
     if(irq<0x20)                   //0-0x1f belongs to interrupt or exception caussed by software
     {
-        handler_list.function_pointer[irq]=(void*)default_handler_soft;	
+        handler_list.function_pointer[irq]=(void*)default_handler_soft; 
     }
     else                           //0x20-0xff belongs to interrupt caused by hardware
     {
@@ -66,12 +61,14 @@ int remove_IRQLINE_handler(unsigned irq)
 void init_handler_for_IRQLINE()
 {
     int i;
+    
     for( i=SOFT_IRQLINE_BEGIN ; i<=SOFT_IRQLINE_END ; i++ )
     {
         handler_list.function_pointer[i]=(void*)default_handler_soft;
     }
     for( i=HARD_IRQLINE_BEGIN ; i<=HARD_IRQLINE_END ; i++ )
     {
+        //Here default_handler_hard was defined in kernel/interrupt.c
         handler_list.function_pointer[i]=(void*)default_handler_hard;
     }
 }
@@ -855,6 +852,22 @@ void handle0x3f()
 
     out_8bits(0x20,0x20);
 }
+/*
+  int40 was used as software interrupt,
+  I use this IRQ to dispatch message(implement IPC mechanism).
+  In OS implementation, regist message send and receive function 
+  to IRQ 0x40 is OK.
+*/
+void sys_send_recv(void* msg)
+{
+    void (*handler)(void*);
+
+    if(handler_list.function_pointer[0x40]!=NULL)
+    {
+        handler=(void (*)(void*))handler_list.function_pointer[0x40];
+        handler(msg);
+    } 
+} 
 
 void handle0x40()
 {
@@ -3351,14 +3364,3 @@ void handle0xff()
 
     out_8bits(0x20,0x20);
 }
-
-void sys_send_recv(void* msg)
-{
-    void (*handler)(void*);
-
-    if(handler_list.function_pointer[0x40]!=NULL)
-    {
-    	handler=(void (*)(void*))handler_list.function_pointer[0x40];
-    	handler(msg);
-    } 
-} 

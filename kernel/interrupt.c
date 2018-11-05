@@ -9,7 +9,7 @@
 
 IRQ_desc IRQ_desc_table[IRQLINE_NUMBER];
 
-void IRQ_desc_table_init()
+void LT_IRQ_desc_table_init()
 {
     int i,j;
     IRQ_minor_desc* minor_desc = NULL;
@@ -28,17 +28,35 @@ void IRQ_desc_table_init()
     }
 }
 
-int sys_regist_IRQ(unsigned irq_line,unsigned flag,void* dev,unsigned priority)
+/*
+    Regist a device to specific IRQ line.
+    Return value:
+    -1: FAILED
+    Otherwise: SUCCESS
+*/
+int sys_IRQLINE_regist(unsigned irq_line,unsigned flag,void* dev,unsigned priority)
+{
+    if(irq_line >= IRQLINE_NUMBER){return -1;}
+
+    // Special case for software interrupt handler.
+    if(irq_line == 0x40)
+    {
+        if(IRQLINE_handler_set(irq_line,dev)){return irq_line;}
+    }
+    else
+    {
+
+    }
+
+    return -1;
+}
+
+int sys_IRQLINE_remove(unsigned irq_line,unsigned minor,void* dev)
 {
     return -1;
 }
 
-int sys_remove_IRQ(unsigned irq_line,unsigned minor,void* dev)
-{
-    return -1;
-}
-
-int set_trigger_IRQ(unsigned irq_line,unsigned flag,Lito_task* task)
+int IRQ_trigger_set(unsigned irq_line,unsigned flag,Lito_task* task)
 {
     if(irq_line>=IRQLINE_NUMBER || task==NULL){return 0;}
 
@@ -56,8 +74,8 @@ void default_handler_hard(unsigned irq)
     Lito_task*      task= NULL;
     Lito_task*      tmp = NULL;
     //Message msg;
-	
-	// check if this irq is legle 
+    
+    // check if this irq is legle 
     if( irq<REUSEABLE_IRQLINE || irq>IRQLINE_NUMBER ){return;}
     
     // Activate those tasks which are waitting for this interrupt.
@@ -75,7 +93,7 @@ void default_handler_hard(unsigned irq)
         // This while loop is for waking up those tasks waitting for this external event
         while(task!=NULL)
         {
-            activate_task(task);
+            LT_activate_task(task);
             tmp  = task;
             task = task->next;
             tmp->next = NULL;
@@ -88,7 +106,7 @@ void default_handler_hard(unsigned irq)
     {
         for( i=1 ; i<MINOR_DEV_NUMBER ; i++ )
         {
-        	imd = &(IRQ_desc_table[irq].minor_table[i]);
+            imd = &(IRQ_desc_table[irq].minor_table[i]);
             if(imd->flag!=UNUSED)
             {
                 //Message something

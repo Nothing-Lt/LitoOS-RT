@@ -21,10 +21,16 @@ typedef struct
     unsigned dst;
     unsigned function;
     unsigned stright_msg;
+
+
     unsigned return_value;
     void*    etc;
 }MESSAGE;
 
-int send_recv(MESSAGE* msg);
+void LT_message_send(MESSAGE* msg);
+
+void LT_message_recv(MESSAGE* msg);
+
+int LT_message_init();
 
 #endif

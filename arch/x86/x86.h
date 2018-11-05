@@ -106,6 +106,7 @@ void ltr(int selector);
 
 /* cause interrupt 40, this is for IPC */
 void int40(void *address);
+#define sys_message_function(address) int40(address)
 
 /* reset the kernel stack */
 void reset_kernel_stack(unsigned new_stack_add);

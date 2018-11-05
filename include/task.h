@@ -85,13 +85,13 @@ typedef struct
 
 
 /*Initial the TCB list*/
-int TCB_list_init();
+int LT_TCB_list_init();
 
 /*Initial the task list*/
-int task_list_init();
+int LT_task_list_init();
 
 /*Initial the running queue*/
-int running_queue_init();
+int LT_running_queue_init();
 
 /*Insert new TCB into TCB list*/
 int TCB_list_insert(Lito_TCB* tcb);
@@ -112,10 +112,10 @@ int running_queue_insert(Lito_TCB* tcb);
 Lito_TCB* running_queue_remove(unsigned pid);
 
 /*Create new task*/
-unsigned create_task(Lito_task* task);
+unsigned LT_create_task(Lito_task* task);
 
 /*Activate task*/
-int activate_task(Lito_task* task);
+int LT_activate_task(Lito_task* task);
 
 /*Shell funtion for jobs*/
 void function_shell(Lito_task* task);
