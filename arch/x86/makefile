@@ -1,7 +1,7 @@
 NO_STDLIB=-nostdlib -fno-builtin
 NO_PIE=-fno-pie
 GCC=gcc
-CFLAG=-I ../../include $(NO_STDLIB) $(NO_PIE) -c -m32 -o
+CFLAG=-Wall -I ../../include $(NO_STDLIB) $(NO_PIE) -c -m32 -o
 NASM=nasm -f elf -o
 OBJECTS=boot.bin scnd.bin hd_interrupt.o hd_interrupt_lib.o hd.o hd_lib.o hd_task.o hd_memory.o 
 

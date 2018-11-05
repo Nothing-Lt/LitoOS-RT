@@ -20,7 +20,7 @@ Return value:
     0: falied(because malloc)
     1: successed
 */
-int task_list_init()
+int LT_task_list_init()
 {
     int i;
 
@@ -46,7 +46,7 @@ Return value:
     0: failed (might because some mistake occured in malloc)
     1: succesed
 */
-int TCB_list_init()
+int LT_TCB_list_init()
 {
     int i;
     
@@ -70,7 +70,7 @@ Return value:
     0:failed
     1:Successed
 */
-int running_queue_init()
+int LT_running_queue_init()
 {
     int i;
 
@@ -210,9 +210,7 @@ Return value:
 */
 int running_queue_insert(Lito_TCB* tcb)
 {
-    int                 i = 0;
     unsigned tmp_priority = 0;
-    TCB*          tmp_tcb = NULL;
     
     // Security check
     if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY || tcb->priority<1){return 0;}
@@ -238,7 +236,6 @@ Lito_TCB* running_queue_remove(unsigned pid)
 {
     int   i = 0; 
     Lito_TCB*  result      = NULL;
-    Lito_TCB*  tcb_tmp     = NULL;
     Lito_TCB** tcb_pointer = NULL;
 
     if(running_queue == NULL||running_queue->tcb_number==0){return NULL;}
@@ -267,10 +264,8 @@ Return value:
    0      :failed to create new task
    others :Success
 */
-unsigned create_task(Lito_task* task)
+unsigned LT_create_task(Lito_task* task)
 {
-    unsigned IRQ_line = 0;
-    Lito_TCB *tcb = NULL;
 
     if(task == NULL){return 0;}
 
@@ -281,19 +276,19 @@ unsigned create_task(Lito_task* task)
     {
         /* those tasks triggered by Clock interruption,
            most for periodtc tasks */
-        if(!set_trigger_IRQ(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
+        if(!IRQ_trigger_set(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
     }
     else if(task->flag&TG_EXTERNAL_EVENT)
     {
         /* Those tasks triggered by External interruption,
            most for aperiodic tasks */
-        if(!set_trigger_IRQ(task->extra,task->flag,task)){while(1);}
+        if(!IRQ_trigger_set(task->extra,task->flag,task)){while(1);}
     }
     else if(task->flag&NORMAL_TASK)
     {
         /* Those normal tasks,just run once, and maybe no deadline,
            start them immediately*/
-        if(!activate_task(task)){while(1);}
+        if(!LT_activate_task(task)){while(1);}
     }
 
     return 1;
@@ -307,7 +302,7 @@ Return value:
    1: success
    0: otherwise
 */
-int activate_task(Lito_task* task)
+int LT_activate_task(Lito_task* task)
 {
     Lito_TCB* tcb = NULL;
     TCB*       tt = NULL;
@@ -372,8 +367,7 @@ Retuen value:
 void function_shell(Lito_task* task)
 {
     void (*job)()   = NULL;
-    void* tmp       = NULL;
-    Lito_TCB* tcb   = NULL;
+    Lito_TCB*   tcb = NULL;
 
     if(task==NULL || task->function==NULL){return;}
 
@@ -384,14 +378,14 @@ void function_shell(Lito_task* task)
     {
         // Reset the status of this job
         // Let this job wait the clock event again
-        if(!set_trigger_IRQ(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
+        if(!IRQ_trigger_set(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
         reset_task(task);
     }
     else if(task->flag&TG_EXTERNAL_EVENT)
     {
         // Reset the status of this job
         // Let this job wait the external event again
-        if(!set_trigger_IRQ(task->extra,task->flag,task)){while(1);}
+        if(!IRQ_trigger_set(task->extra,task->flag,task)){while(1);}
         reset_task(task);
     }
     else // just a regular job,user just want it run once.

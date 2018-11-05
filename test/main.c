@@ -1,13 +1,10 @@
 #include <LitoOS.h>
 
+#include <message.h>
+
 extern unsigned pid;
 
-void function()
-{
-    int i;
-
-    for(i=0;i<20;);
-}
+void function();
 
 int main()
 {
@@ -22,10 +19,20 @@ int main()
     task->function = (void*)function;
     task->next     = NULL;
     task->tcb      = NULL;
-    create_task(task);
+    LT_create_task(task);
 
     LT_OS_start();
 
     while(1);
     LT_IRQ_enable();
+}
+
+void function()
+{
+    int i;
+    MESSAGE msg;
+
+    LT_message_send(&msg);
+
+    for(i=0;i<20;);
 }

@@ -1,7 +1,7 @@
 NO_STDLIB=-nostdlib -fno-builtin
 NO_PIE=-fno-pie
 GCC=gcc 
-CFLAG=-I ../include/ $(NO_STDLIB) $(NO_PIE) -m32 -c -o
+CFLAG=-Wall -I ../include/ $(NO_STDLIB) $(NO_PIE) -m32 -c -o
 NASM=nasm -f elf -o
 OBJECTS=LitoOS.o task.o memory.o message.o schedule.o interrupt.o
 

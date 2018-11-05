@@ -10,7 +10,7 @@ unsigned free_memory_add;
 unused_block* unused_block_list;
 
 
-void init_memory_block(unsigned memory_add, unsigned memory_size)
+void LT_memory_block_init(unsigned memory_add, unsigned memory_size)
 {
     unused_block_list           = (unused_block*)memory_add;
     unused_block_list->base_add = (unsigned)memory_add;

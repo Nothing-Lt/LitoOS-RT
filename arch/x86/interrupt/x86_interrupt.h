@@ -583,7 +583,7 @@ void default_handler_soft(unsigned error_ip,unsigned error_code);
 // this function for setting handler of an IRQ line,
 // and this function is only callde by system kernel,
 // no user application could call this function.
-int set_IRQLINE_handler(unsigned irq,void* function);
+int IRQLINE_handler_set(unsigned irq,void* function);
 
 int remove_IRQLINE_handler(unsigned irq);
 

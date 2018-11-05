@@ -36,7 +36,7 @@ void gdt_idt_init(unsigned kernel_size)
 	
     free_memory_add=(GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt));
 	
-    if((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xf!=0)
+    if(((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xf)!=0)
     {
         free_memory_add=(((GDT_ADD+ELE_NUM_IN_GDT_TBL*sizeof(gdt))&0xfffffff0)+8);
     }
@@ -320,12 +320,12 @@ void set_gdt(gdt *g,unsigned base,unsigned limit,int ar)
         ar   = ar | BIG_DESCRIP;
         limit= limit / 0x1000;
     }
-    g->limit_low = limit     & 0xffff;
-    g->base_low  = base      & 0xffff;
-    g->base_mid  = (base>>16)& 0xff;
-    g->base_high = (base>>24)& 0xff;
-    g->ar        = ar        & 0xff;
-    g->limit_high= (ar>>8)   & 0xf0 | (limit>>16) & 0xf;
+    g->limit_low  = limit     & 0xffff;
+    g->base_low   = base      & 0xffff;
+    g->base_mid   = (base>>16)& 0xff;
+    g->base_high  = (base>>24)& 0xff;
+    g->ar         = ar        & 0xff;
+    g->limit_high = ((ar>>8)  & 0xf0) | ((limit>>16) & 0xf);
 }
 
 unsigned find_empty_gdt()
