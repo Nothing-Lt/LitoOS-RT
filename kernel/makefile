@@ -1,28 +1,25 @@
 NO_STDLIB=-nostdlib -fno-builtin
 NO_PIE=-fno-pie
-GCC=gcc 
-CFLAG=-Wall -I ../include/ $(NO_STDLIB) $(NO_PIE) -m32 -c -o
-NASM=nasm -f elf -o
+CFLAG=-I ../include/ $(NO_STDLIB) $(NO_PIE) -Wall -m32 -c
 OBJECTS=LitoOS.o task.o memory.o message.o schedule.o interrupt.o
 
-
 LitoOS.o:LitoOS.c
-	$(GCC) $(CFLAG) LitoOS.o LitoOS.c
+	$(CC) $(CFLAG) -o LitoOS.o LitoOS.c
 
 task.o:task.c
-	$(GCC) $(CFLAG) task.o task.c
+	$(CC) $(CFLAG) -o task.o task.c
 
 memory.o:memory.c
-	$(GCC) $(CFLAG) memory.o memory.c
+	$(CC) $(CFLAG) -o memory.o memory.c
 
 message.o:message.c
-	$(GCC) $(CFLAG) message.o message.c
+	$(CC) $(CFLAG) -o message.o message.c
 
 schedule.o:schedule.c
-	$(GCC) $(CFLAG) schedule.o schedule.c
+	$(CC) $(CFLAG) -o schedule.o schedule.c
 
 interrupt.o:interrupt.o
-	$(GCC) $(CFLAG) interrupt.o interrupt.c
+	$(CC) $(CFLAG) -o interrupt.o interrupt.c
 
 kernel:$(OBJECTS)
 	mv $(OBJECTS) ../
