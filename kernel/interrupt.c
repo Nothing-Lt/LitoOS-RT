@@ -9,6 +9,9 @@
 
 IRQ_desc IRQ_desc_table[IRQLINE_NUMBER];
 
+/*
+    Initialize the IRQ describe table.
+*/
 void LT_IRQ_desc_table_init()
 {
     int i,j;
