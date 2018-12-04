@@ -44,13 +44,15 @@ int sys_IRQLINE_regist(unsigned irq_line,unsigned flag,void* dev,unsigned priori
     // Special case for software interrupt handler.
     if(irq_line == 0x40)
     {
+        // If success,return IRQ line number.
         if(IRQLINE_handler_set(irq_line,dev)){return irq_line;}
     }
     else
     {
-
+        //I didn't figured out what will happened here.
     }
 
+    // Failed
     return -1;
 }
 
