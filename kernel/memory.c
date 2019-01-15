@@ -56,7 +56,7 @@ void* malloc(unsigned size)
         }
     }
     
-    if(temp->next==NULL && temp==unused_block_list)
+    if((temp->next==NULL) && (temp==unused_block_list))
     {
         allocated_mem = (used_block*)temp;
 

@@ -19,7 +19,7 @@ typedef struct
 {
     unsigned base_add;
     unsigned size;
-    void* buff;
+    void*    buff;
 }used_block;
 
 
@@ -27,7 +27,7 @@ typedef struct unused_block
 {
     unsigned base_add;
     unsigned size;
-    struct unused_block* next;
+    struct   unused_block* next;
 }unused_block;
 
 

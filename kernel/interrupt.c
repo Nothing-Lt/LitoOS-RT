@@ -81,14 +81,14 @@ void default_handler_hard(unsigned irq)
     //Message msg;
     
     // check if this irq is legle 
-    if( irq<REUSEABLE_IRQLINE || irq>IRQLINE_NUMBER ){return;}
+    if( (irq < REUSEABLE_IRQLINE) || (irq > IRQLINE_NUMBER) ){return;}
     
     // Activate those tasks which are waitting for this interrupt.
     // Those tasks waked up is triggered by external event.
     // For each IRQ line, the first minor descriptor (minor_table[0]) is for Keeping the task structure,
     // for those tasks request for this external event
     imd = &(IRQ_desc_table[irq].minor_table[0]);
-    if(imd->flag!=UNUSED)
+    if(imd->flag != UNUSED)
     {
         if(imd->flag & TG_EXTERNAL_EVENT)
         {
@@ -96,18 +96,18 @@ void default_handler_hard(unsigned irq)
         }
 
         // This while loop is for waking up those tasks waitting for this external event
-        while(task!=NULL)
+        while(task != NULL)
         {
             LT_activate_task(task);
-            tmp  = task;
-            task = task->next;
+            tmp       = task;
+            task      = task->next;
             tmp->next = NULL;
         }
     }
 
     // Some tasks need this external interrupt
     // send those tasks message by using IPC
-    if( IRQ_desc_table[irq].registed_number!=0)
+    if(IRQ_desc_table[irq].registed_number != 0)
     {
         for( i=1 ; i<MINOR_DEV_NUMBER ; i++ )
         {
