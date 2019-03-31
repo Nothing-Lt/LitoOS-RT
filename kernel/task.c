@@ -10,7 +10,7 @@ task_list* task_l;
 TCB_list* TCB_l;
 Lito_running_queue* running_queue;
 
-unsigned pid;
+volatile unsigned pid;
 
 /*
 Initial task list 

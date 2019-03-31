@@ -3,9 +3,9 @@
 
 #include "../arch/x86/x86_memory.h"
 
-unsigned kernel_size;
-unsigned memory_size;
-unsigned free_memory_add;
+volatile unsigned kernel_size;
+volatile unsigned memory_size;
+volatile unsigned free_memory_add;
 
 unused_block* unused_block_list;
 
