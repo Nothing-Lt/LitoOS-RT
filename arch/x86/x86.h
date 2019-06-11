@@ -1,6 +1,8 @@
 #ifndef X86_H
 #define X86_H
 
+#include "x86_stdint.h"
+
 #define NULL  0
 #define FALSE 0
 #define TRUE  1
@@ -51,17 +53,17 @@
 // GDT LDT IDT struct define it's from Intel x86 
 typedef struct
 {
-    unsigned short limit_low,base_low;
-    unsigned char  base_mid, ar,      limit_high,base_high;
+    uint16_t limit_low,base_low;
+    uint8_t  base_mid, ar,      limit_high,base_high;
 }gdt;
 
 typedef gdt ldt;
 
 typedef struct
 {
-    unsigned short offset_low,selector;
-    unsigned char  nothing   ,ar;
-    unsigned short offset_high;
+    uint16_t offset_low,selector;
+    uint8_t  nothing   ,ar;
+    uint16_t offset_high;
 }idt;
 
 // following hunction defined in "x86_lib.asm"
@@ -78,53 +80,53 @@ void cli();
 #define LT_IRQ_disable() cli()
 
 /* load gdt table to lgdt register*/
-void lgdt(int limit,int base);
+void lgdt(int32_t limit,int32_t base);
 
 /* loda idt table to lidt register*/
-void lidt(int limit,int base);
+void lidt(int32_t limit,int32_t base);
 
 /* read 8bit from I/O */
-unsigned char in_8bits(int port);
+uint8_t in_8bits(int32_t port);
 
 /* read 16bit from I/O */
-unsigned short in_16bits(int port);
+uint16_t in_16bits(int32_t port);
 
 /* read 32bit from I/O */
-unsigned in_32bits(int port);
+uint32_t in_32bits(int32_t port);
 
 /* write 8bit to I/O */
-void out_8bits(unsigned port,unsigned char msg);
+void out_8bits(uint32_t port,uint8_t msg);
 
 /* write 16bit to I/O */
-void out_16bits(unsigned port,unsigned short msg);
+void out_16bits(uint32_t port,uint16_t msg);
 
 /* write 32bit to I/O */
-void out_32bits(unsigned port,unsigned msg);
+void out_32bits(uint32_t port,uint32_t msg);
 
 /**/
-void ltr(int selector);
+void ltr(int32_t selector);
 
 /* cause interrupt 40, this is for IPC */
 void int40(void *address);
 #define sys_message_function(address) int40(address)
 
 /* reset the kernel stack */
-void reset_kernel_stack(unsigned new_stack_add);
+void reset_kernel_stack(uint32_t new_stack_add);
 
 /* read 32bit data from address*/
-unsigned get_memory(void* address);
+uint32_t get_memory(void* address);
 
 /*most stupid way to check the memory size*/
-unsigned check_memory();
+uint32_t check_memory();
 
 void store_page(void* address);
 
 // reset the kernel selector change the GDT selector to the LDT selector
 // it's almost switch the task
-void reset_selector(unsigned ldt,unsigned cs,unsigned ds);
+void reset_selector(uint32_t ldt,uint32_t cs,uint32_t ds);
 
 // the most function to  switch task 
-void far_jump(unsigned base,unsigned selector);
+void far_jump(uint32_t base,uint32_t selector);
 
 void play();     // for debugging
 
@@ -139,13 +141,13 @@ void playd();    // for debugging
 
 // following function defined in x86.c
 /* set an element in gdt atable */
-void set_gdt(gdt* g,unsigned memory_add ,unsigned limit,int ar);
+void set_gdt(gdt* g,uint32_t memory_add ,uint32_t limit,int32_t ar);
 
 /* set an element in idt table */
-void set_idt(idt* i,unsigned handler_add,int selector  ,int ar);
+void set_idt(idt* i,uint32_t handler_add,int32_t selector,int32_t ar);
 
 /*Find an empty GDT slot from GDT table*/
-unsigned find_empty_gdt();
+uint32_t find_empty_gdt();
 
 /* initial gdt and idt table and load address in gdt idt register */
 void gdt_idt_init();

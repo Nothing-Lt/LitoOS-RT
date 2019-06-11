@@ -3,27 +3,27 @@
 
 #include "../arch/x86/x86_memory.h"
 
-volatile unsigned kernel_size;
-volatile unsigned memory_size;
-volatile unsigned free_memory_add;
+volatile uint32_t kernel_size;
+volatile uint32_t memory_size;
+volatile uint32_t free_memory_add;
 
 unused_block* unused_block_list;
 
 
-void LT_memory_block_init(unsigned memory_add, unsigned memory_size)
+void LT_memory_block_init(uint32_t memory_add, uint32_t memory_size)
 {
     unused_block_list           = (unused_block*)memory_add;
-    unused_block_list->base_add = (unsigned)memory_add;
+    unused_block_list->base_add = (uint32_t)memory_add;
     unused_block_list->size     = memory_size;
     unused_block_list->next     = NULL;
 }
 
 
-void* malloc(unsigned size)
+void* malloc(uint32_t size)
 {
-    unsigned alloc_size      =0;
-    unsigned fixed_base_add  =0;
-    unsigned fixed_size      =0;
+    uint32_t alloc_size      =0;
+    uint32_t fixed_base_add  =0;
+    uint32_t fixed_size      =0;
     used_block* allocated_mem=NULL;
     unused_block* new_block  =NULL;
     unused_block* temp       =NULL;
@@ -75,7 +75,7 @@ void* malloc(unsigned size)
         return NULL;
     }
 
-    allocated_mem->base_add = (unsigned)(allocated_mem);
+    allocated_mem->base_add = (uint32_t)(allocated_mem);
     allocated_mem->size = alloc_size;
 
     return &(allocated_mem->buff); 
@@ -89,8 +89,9 @@ int free(void* add)
  
     if(add==NULL || unused_block_list == NULL){return 0;}
 
-    block = (used_block*)((long unsigned)add-DIFF(used_block,buff));
+    block = (used_block*)((uint64_t)add-DIFF(used_block,buff));
     new_block = (unused_block*)block;
+    
     new_block->base_add = block->base_add;
     new_block->size = block->size;
     new_block->next=NULL;

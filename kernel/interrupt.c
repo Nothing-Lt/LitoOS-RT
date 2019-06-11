@@ -14,7 +14,7 @@ IRQ_desc IRQ_desc_table[IRQLINE_NUMBER];
 */
 void LT_IRQ_desc_table_init()
 {
-    int i,j;
+    int32_t i,j;
     IRQ_minor_desc* minor_desc = NULL;
 
     for(i=0;i<IRQLINE_NUMBER;i++)
@@ -37,7 +37,7 @@ void LT_IRQ_desc_table_init()
     -1: FAILED
     Otherwise: SUCCESS
 */
-int sys_IRQLINE_regist(unsigned irq_line,unsigned flag,void* dev,unsigned priority)
+int sys_IRQLINE_regist(uint32_t irq_line,uint32_t flag,void* dev,uint32_t priority)
 {
     if(irq_line >= IRQLINE_NUMBER){return -1;}
 
@@ -56,12 +56,12 @@ int sys_IRQLINE_regist(unsigned irq_line,unsigned flag,void* dev,unsigned priori
     return -1;
 }
 
-int sys_IRQLINE_remove(unsigned irq_line,unsigned minor,void* dev)
+int sys_IRQLINE_remove(uint32_t irq_line,uint32_t minor,void* dev)
 {
     return -1;
 }
 
-int IRQ_trigger_set(unsigned irq_line,unsigned flag,Lito_task* task)
+int IRQ_trigger_set(uint32_t irq_line,uint32_t flag,Lito_task* task)
 {
     if(irq_line>=IRQLINE_NUMBER || task==NULL){return 0;}
 
@@ -72,7 +72,7 @@ int IRQ_trigger_set(unsigned irq_line,unsigned flag,Lito_task* task)
     return 1;
 }
 
-void default_handler_hard(unsigned irq)
+void default_handler_hard(uint32_t irq)
 {
     int i;
     IRQ_minor_desc* imd = NULL;

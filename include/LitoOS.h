@@ -1,6 +1,8 @@
 #ifndef LITOOS_H
 #define LITOOS_H
 
+#include <stdint.h>
+
 #include <util.h>
 
 #include <task.h>

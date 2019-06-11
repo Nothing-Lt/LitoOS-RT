@@ -13,8 +13,8 @@ implement LT_IRQ_disable,
 
 #include "../arch/x86/x86.h"
 
-extern unsigned memory_size;
-extern unsigned free_memory_add;
+extern uint32_t memory_size;
+extern uint32_t free_memory_add;
 
 void LT_OS_init()
 {

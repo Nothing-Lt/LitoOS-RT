@@ -1,6 +1,8 @@
 #ifndef X86_MEMORY_H
 #define X86_MEMORY_H
 
+#include "x86_stdint.h"
+
 #define PAGE_EXIST_AUTH   1
 #define PAGE_READ_AUTH    0
 #define PAGE_WRITE_AUTH   2
@@ -17,6 +19,6 @@
 #define REFRESH_TLB() asm("movl %cr3,%eax\n\
                            movl %eax,%cr3")
 
-void x86_set_page(unsigned memory_size);
+void x86_set_page(uint32_t memory_size);
 
 #endif

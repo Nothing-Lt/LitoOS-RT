@@ -1,6 +1,8 @@
 #ifndef X86_INTERRUPT_H
 #define X86_INTERRUPT_H
 
+#include "../x86_stdint.h"
+
 #define PAGE_PRESENT       1
 #define PAGE_READ          0
 #define PAGE_WRITE         2
@@ -305,38 +307,38 @@ void asm_handle0xfe();
 void asm_handle0xff();
 
 //extern void asm_handle0x2e();
-void handle0x00(unsigned error_ip,unsigned error_code);
-void handle0x01(unsigned error_ip,unsigned error_code);
-void handle0x02(unsigned error_ip,unsigned error_code);
-void handle0x03(unsigned error_ip,unsigned error_code);
-void handle0x04(unsigned error_ip,unsigned error_code);
-void handle0x05(unsigned error_ip,unsigned error_code);
-void handle0x06(unsigned error_ip,unsigned error_code);
-void handle0x07(unsigned error_ip,unsigned error_code);
-void handle0x08(unsigned error_ip,unsigned error_code);
-void handle0x09(unsigned error_ip,unsigned error_code);
-void handle0x0a(unsigned error_ip,unsigned error_code);
-void handle0x0b(unsigned error_ip,unsigned error_code);
-void handle0x0c(unsigned error_ip,unsigned error_code);
-void handle0x0d(unsigned error_ip,unsigned error_code);
-void handle0x0e(unsigned error_ip,unsigned error_code);
-void handle0x0f(unsigned error_ip,unsigned error_code);
-void handle0x10(unsigned error_ip,unsigned error_code);
-void handle0x11(unsigned error_ip,unsigned error_code);
-void handle0x12(unsigned error_ip,unsigned error_code);
-void handle0x13(unsigned error_ip,unsigned error_code);
-void handle0x14(unsigned error_ip,unsigned error_code);
-void handle0x15(unsigned error_ip,unsigned error_code);
-void handle0x16(unsigned error_ip,unsigned error_code);
-void handle0x17(unsigned error_ip,unsigned error_code);
-void handle0x18(unsigned error_ip,unsigned error_code);
-void handle0x19(unsigned error_ip,unsigned error_code);
-void handle0x1a(unsigned error_ip,unsigned error_code);
-void handle0x1b(unsigned error_ip,unsigned error_code);
-void handle0x1c(unsigned error_ip,unsigned error_code);
-void handle0x1d(unsigned error_ip,unsigned error_code);
-void handle0x1e(unsigned error_ip,unsigned error_code);
-void handle0x1f(unsigned error_ip,unsigned error_code);
+void handle0x00(uint32_t error_ip,uint32_t error_code);
+void handle0x01(uint32_t error_ip,uint32_t error_code);
+void handle0x02(uint32_t error_ip,uint32_t error_code);
+void handle0x03(uint32_t error_ip,uint32_t error_code);
+void handle0x04(uint32_t error_ip,uint32_t error_code);
+void handle0x05(uint32_t error_ip,uint32_t error_code);
+void handle0x06(uint32_t error_ip,uint32_t error_code);
+void handle0x07(uint32_t error_ip,uint32_t error_code);
+void handle0x08(uint32_t error_ip,uint32_t error_code);
+void handle0x09(uint32_t error_ip,uint32_t error_code);
+void handle0x0a(uint32_t error_ip,uint32_t error_code);
+void handle0x0b(uint32_t error_ip,uint32_t error_code);
+void handle0x0c(uint32_t error_ip,uint32_t error_code);
+void handle0x0d(uint32_t error_ip,uint32_t error_code);
+void handle0x0e(uint32_t error_ip,uint32_t error_code);
+void handle0x0f(uint32_t error_ip,uint32_t error_code);
+void handle0x10(uint32_t error_ip,uint32_t error_code);
+void handle0x11(uint32_t error_ip,uint32_t error_code);
+void handle0x12(uint32_t error_ip,uint32_t error_code);
+void handle0x13(uint32_t error_ip,uint32_t error_code);
+void handle0x14(uint32_t error_ip,uint32_t error_code);
+void handle0x15(uint32_t error_ip,uint32_t error_code);
+void handle0x16(uint32_t error_ip,uint32_t error_code);
+void handle0x17(uint32_t error_ip,uint32_t error_code);
+void handle0x18(uint32_t error_ip,uint32_t error_code);
+void handle0x19(uint32_t error_ip,uint32_t error_code);
+void handle0x1a(uint32_t error_ip,uint32_t error_code);
+void handle0x1b(uint32_t error_ip,uint32_t error_code);
+void handle0x1c(uint32_t error_ip,uint32_t error_code);
+void handle0x1d(uint32_t error_ip,uint32_t error_code);
+void handle0x1e(uint32_t error_ip,uint32_t error_code);
+void handle0x1f(uint32_t error_ip,uint32_t error_code);
 
 // hardware handler
 void handle0x20();
@@ -578,14 +580,14 @@ void handle0xfe();
 void handle0xff();
 
 //default handler for software and hardware interrupt
-void default_handler_soft(unsigned error_ip,unsigned error_code);
+void default_handler_soft(uint32_t error_ip,uint32_t error_code);
 
 // this function for setting handler of an IRQ line,
 // and this function is only callde by system kernel,
 // no user application could call this function.
-int IRQLINE_handler_set(unsigned irq,void* function);
+int IRQLINE_handler_set(uint32_t irq,void* function);
 
-int remove_IRQLINE_handler(unsigned irq);
+int remove_IRQLINE_handler(uint32_t irq);
 
 // default hardware interrupt handler
 void default_send_recv(void* msg);
@@ -597,7 +599,7 @@ void sys_send_recv(void *msg);
 void asm_send_recv();
 
 // set handler to the specified interrupt number
-void set_handler(unsigned num,void *function);
+void set_handler(uint32_t num,void *function);
 
 
 #endif

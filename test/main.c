@@ -2,7 +2,7 @@
 
 #include <message.h>
 
-extern unsigned pid;
+extern uint32_t pid;
 
 void function();
 
@@ -29,7 +29,7 @@ int main()
 
 void function()
 {
-    int i;
+    int32_t i;
     MESSAGE msg;
 
     LT_message_send(&msg);

@@ -11,7 +11,7 @@ void* hardware_TCB_init(void* function,void* parameter)
 {
     TCB*             tcb  = NULL;
     void*            esp  = NULL;
-    unsigned gdt_selector = 0;
+    uint32_t gdt_selector = 0;
 
     if(function == NULL){return NULL;}
 
@@ -25,12 +25,12 @@ void* hardware_TCB_init(void* function,void* parameter)
     if(gdt_selector == 0){return NULL;}
     
     tcb->tasc.cr3 = PAGE_TABLE_ADD;
-    tcb->tasc.eip = (unsigned)function;
+    tcb->tasc.eip = (uint32_t)function;
     tcb->tasc.eflags = KERNEL_EFLAG;
     
     tcb->tasc.eax = tcb->tasc.ecx = tcb->tasc.edx = \
     tcb->tasc.ebx = tcb->tasc.edi = 0;
-    tcb->tasc.ebp = tcb->tasc.esp = (unsigned)esp + 2*SIZE_OF_PAGE - 2*sizeof(void*);
+    tcb->tasc.ebp = tcb->tasc.esp = (uint32_t)esp + 2*SIZE_OF_PAGE - 2*sizeof(void*);
     
     tcb->tasc.es = tcb->tasc.ds = tcb->tasc.fs = \
     tcb->tasc.gs = tcb->tasc.ss = DS_GDT<<3;
@@ -39,8 +39,8 @@ void* hardware_TCB_init(void* function,void* parameter)
     tcb->tasc.iomap_base = NORMAL_IOMAPBASE;
 
     tcb->selector = gdt_selector<<3;
-    tcb->user_esp = (unsigned)esp;
-    set_gdt(&gdt_addr[gdt_selector],(unsigned)&(tcb->tasc),TSS_SIZE,TSS_DESCRIB);
+    tcb->user_esp = (uint32_t)esp;
+    set_gdt(&gdt_addr[gdt_selector],(uint32_t)&(tcb->tasc),TSS_SIZE,TSS_DESCRIB);
 
     *((void**)(tcb->tasc.esp+sizeof(void*))) = parameter;
 

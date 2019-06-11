@@ -1,9 +1,11 @@
 #ifndef SCHEDULE_H
 #define SCHEDULE_H
 
+#include <stdint.h>
+
 typedef struct
 {
-    char* name;
+    uint8_t* name;
     void* initialize;
     void* insert_OK;
     void* reorganize;

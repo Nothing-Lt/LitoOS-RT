@@ -10,7 +10,7 @@ task_list* task_l;
 TCB_list* TCB_l;
 Lito_running_queue* running_queue;
 
-volatile unsigned pid;
+volatile uint32_t pid;
 
 /*
 Initial task list 
@@ -123,9 +123,9 @@ Retuen value:
     NULL: Failed
     Pointer of TCb: Successed
 */
-Lito_TCB* TCB_list_remove(unsigned pid)
+Lito_TCB* TCB_list_remove(uint32_t pid)
 {
-    int i;
+    int32_t i;
     Lito_TCB* result = NULL;
  
     if(TCB_l==NULL || pid==0){return NULL;}
@@ -151,9 +151,9 @@ Return value:
     0: Failed
     1: Successed
 */
-int task_list_insert(Lito_task* task)
+int32_t task_list_insert(Lito_task* task)
 {
-    int i;
+    int32_t i;
 
     if(task_l==NULL || task==NULL){return 0;}
 
@@ -180,9 +180,9 @@ Return value:
     NULL: Failed
     Pointer of Lito_task: Successed
 */
-Lito_task* task_list_remove(unsigned pid)
+Lito_task* task_list_remove(uint32_t pid)
 {
-    int i;
+    int32_t i;
     Lito_task* result = NULL;
 
     if(task_l==NULL || pid==0){return NULL;}
@@ -210,7 +210,7 @@ Return value:
 */
 int running_queue_insert(Lito_TCB* tcb)
 {
-    unsigned tmp_priority = 0;
+    uint32_t tmp_priority = 0;
     
     // Security check
     if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY || tcb->priority<1){return 0;}
@@ -232,7 +232,7 @@ Return value:
     NULL: Failed
     Pointer of Lito_TCB: Susscced
 */
-Lito_TCB* running_queue_remove(unsigned pid)
+Lito_TCB* running_queue_remove(uint32_t pid)
 {
     int   i = 0; 
     Lito_TCB*  result      = NULL;
@@ -264,7 +264,7 @@ Return value:
    0      :failed to create new task
    others :Success
 */
-unsigned LT_create_task(Lito_task* task)
+uint32_t LT_create_task(Lito_task* task)
 {
 
     if(task == NULL){return 0;}
@@ -302,7 +302,7 @@ Return value:
    1: success
    0: otherwise
 */
-int LT_activate_task(Lito_task* task)
+int32_t LT_activate_task(Lito_task* task)
 {
     Lito_TCB* tcb = NULL;
     TCB*       tt = NULL;

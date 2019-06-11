@@ -6,3 +6,6 @@ $make.
 
 Compiled result:
 One image file named LitoOS.img in 1.44 floppy disk format. 
+
+Adapt:
+When adapting to other platform, modify include/stdint.h for data type.

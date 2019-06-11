@@ -1,5 +1,6 @@
 #ifndef MEMORY_H
 #define MEMORY_H
+
 /*
   Memory Model in LitoOS
   
@@ -12,33 +13,35 @@
 
 */
 
+#include <stdint.h>
+
 #define MIN_BLOCK_SIZE 0x10
-#define DIFF(a,b) (unsigned)(&(((a*)0)->b))-0
+#define DIFF(a,b) (uint32_t)(&(((a*)0)->b))-0
 
 typedef struct
 {
-    unsigned base_add;
-    unsigned size;
+    uint32_t base_add;
+    uint32_t size;
     void*    buff;
 }used_block;
 
 
 typedef struct unused_block
 {
-    unsigned base_add;
-    unsigned size;
+    uint32_t base_add;
+    uint32_t size;
     struct   unused_block* next;
 }unused_block;
 
 
 /*initial the memory block, this memory block servey for malloc and free function*/
-void LT_memory_block_init(unsigned memory_add,unsigned memory_size);
+void LT_memory_block_init(uint32_t memory_add,uint32_t memory_size);
 
 /*this is the "malloc"*/
-void* malloc(unsigned size);
+void* malloc(uint32_t size);
 
 /*this is the "free"*/
-int free(void* add);
+int32_t free(void* add);
 
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <stdint.h>
+
 #include <message.h>
 
 #define MAX_PRIORITY      128
@@ -20,14 +22,14 @@
 /* This structure is for LitoOS,no need to modify */
  typedef struct Lito_task
  {
-    unsigned          pid;
-    unsigned          flag;      // This task is periodic or aperiodic
-    unsigned          priority;  // priority useful for static priority scheduling.
-    unsigned          WCET;      // Worst Case Execution Time.
-    unsigned          deadline;  // Releated deadline
-    unsigned          start_time;// when this task start
-    unsigned          period;    // what the period of this task
-    unsigned          extra;     // External event IRQ line number and something else 
+    uint32_t          pid;
+    uint32_t          flag;      // This task is periodic or aperiodic
+    uint32_t          priority;  // priority useful for static priority scheduling.
+    uint32_t          WCET;      // Worst Case Execution Time.
+    uint32_t          deadline;  // Releated deadline
+    uint32_t          start_time;// when this task start
+    uint32_t          period;    // what the period of this task
+    uint32_t          extra;     // External event IRQ line number and something else 
     void*             function;  // Entry point of this task
     struct Lito_TCB*  tcb;       // Point to TCB instance 
     struct Lito_task* next;      // Point to next task, till now, it's used by interrupt handler
@@ -40,11 +42,11 @@
 */
 typedef struct Lito_TCB
 {
-    unsigned         pid;  
-    unsigned         status;         // process status: running, waiting, hanging
-    unsigned         compution_time; // rest compution time
-    unsigned         priority;       // dynamic priority,this priority will be decide in running time
-    unsigned         deadline;       // Absolute deadline, will be decided in running time
+    uint32_t         pid;  
+    uint32_t         status;         // process status: running, waiting, hanging
+    uint32_t         compution_time; // rest compution time
+    uint32_t         priority;       // dynamic priority,this priority will be decide in running time
+    uint32_t         deadline;       // Absolute deadline, will be decided in running time
     MESSAGE*         msg;
     Lito_task*       task;           // Point to the task instance, 
     void*            tcb;            // When you transplant this system to other platform, modify this!!!!!!!!
@@ -58,7 +60,7 @@ typedef struct Lito_TCB
 typedef struct 
 {
     Lito_task* list[MAX_TASK_NUMBER]; //a set of pointer point to task block
-    unsigned task_number;
+    uint32_t task_number;
 }task_list;
 
 /*
@@ -69,7 +71,7 @@ typedef struct
 typedef struct
 {
     Lito_TCB* list[MAX_TCB_NUMBER]; // a set of pointer point to TCB block which assigned by malloc
-    unsigned tcb_number;
+    uint32_t tcb_number;
 } TCB_list;
 
 /*
@@ -80,7 +82,7 @@ typedef struct
 typedef struct
 {
     Lito_TCB* list[MAX_PRIORITY];
-    unsigned tcb_number;
+    uint32_t tcb_number;
 }Lito_running_queue;
 
 
@@ -97,22 +99,22 @@ int LT_running_queue_init();
 int TCB_list_insert(Lito_TCB* tcb);
 
 /*Remove a TCB from TCB list, indexed by pid*/
-Lito_TCB* TCB_list_remove(unsigned pid);
+Lito_TCB* TCB_list_remove(uint32_t pid);
 
 /*Insert a task into task list*/
 int task_list_insert(Lito_task* task);
 
 /*Remove a task from task list,indexed by pid*/
-Lito_task* task_list_remove(unsigned pid);
+Lito_task* task_list_remove(uint32_t pid);
 
 /*Insert TCB into running queue*/
 int running_queue_insert(Lito_TCB* tcb);
 
 /*Remove TCB from running queue*/
-Lito_TCB* running_queue_remove(unsigned pid);
+Lito_TCB* running_queue_remove(uint32_t pid);
 
 /*Create new task*/
-unsigned LT_create_task(Lito_task* task);
+uint32_t LT_create_task(Lito_task* task);
 
 /*Activate task*/
 int LT_activate_task(Lito_task* task);
