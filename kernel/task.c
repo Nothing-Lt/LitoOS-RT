@@ -20,9 +20,9 @@ Return value:
     0: falied(because malloc)
     1: successed
 */
-int LT_task_list_init()
+int32_t LT_task_list_init()
 {
-    int i;
+    int32_t i;
 
     task_l = (task_list*)malloc(sizeof(task_list));
     if(task_l == NULL){return 0;}
@@ -46,9 +46,9 @@ Return value:
     0: failed (might because some mistake occured in malloc)
     1: succesed
 */
-int LT_TCB_list_init()
+int32_t LT_TCB_list_init()
 {
-    int i;
+    int32_t i;
     
     TCB_l = (TCB_list*)malloc(sizeof(TCB_list));
     if(TCB_l == NULL){return 0;}
@@ -70,9 +70,9 @@ Return value:
     0:failed
     1:Successed
 */
-int LT_running_queue_init()
+int32_t LT_running_queue_init()
 {
-    int i;
+    int32_t i;
 
     running_queue = (Lito_running_queue*)malloc(sizeof(Lito_running_queue));
     if(running_queue == NULL){return 0;}
@@ -94,9 +94,9 @@ Return value:
     0: Failed
     1: Successed
 */
-int TCB_list_insert(Lito_TCB* tcb)
+int32_t TCB_list_insert(Lito_TCB* tcb)
 {
-    int i;
+    int32_t i;
 
     if(TCB_l==NULL || tcb==NULL){return 0;}
 
@@ -208,7 +208,7 @@ Return value:
     0:Failed
     1:Successed
 */
-int running_queue_insert(Lito_TCB* tcb)
+int32_t running_queue_insert(Lito_TCB* tcb)
 {
     uint32_t tmp_priority = 0;
     
@@ -234,7 +234,7 @@ Return value:
 */
 Lito_TCB* running_queue_remove(uint32_t pid)
 {
-    int   i = 0; 
+    int32_t   i = 0; 
     Lito_TCB*  result      = NULL;
     Lito_TCB** tcb_pointer = NULL;
 
@@ -340,7 +340,7 @@ int32_t LT_activate_task(Lito_task* task)
     return 0;
 }
 
-int reset_task(Lito_task* task)
+int32_t reset_task(Lito_task* task)
 {
     if(task == NULL){return 0;}
 
