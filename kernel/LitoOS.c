@@ -28,9 +28,9 @@ void LT_OS_init()
 
     LT_task_list_init();
     
-    LT_TCB_list_init();
-    
-    LT_running_queue_init();
+    LT_ready_queue_init();
+
+    LT_scheduling_algorithm_setup();
 
     LT_message_init();
 }

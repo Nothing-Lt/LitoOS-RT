@@ -19,7 +19,7 @@ void LT_memory_block_init(uint32_t memory_add, uint32_t memory_size)
 }
 
 
-void* malloc(uint32_t size)
+void* malloc(size_t size)
 {
     uint32_t alloc_size      =0;
     uint32_t fixed_base_add  =0;

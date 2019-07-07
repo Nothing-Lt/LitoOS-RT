@@ -18,11 +18,12 @@
 #define READY             0x2   //task status
 #define HANGING           0x4   //task status
 
+typedef uint32_t pid_t;
 
 /* This structure is for LitoOS,no need to modify */
  typedef struct Lito_task
  {
-    uint32_t          pid;
+    pid_t             pid;
     uint32_t          flag;      // This task is periodic or aperiodic
     uint32_t          priority;  // priority useful for static priority scheduling.
     uint32_t          WCET;      // Worst Case Execution Time.
@@ -42,14 +43,14 @@
 */
 typedef struct Lito_TCB
 {
-    uint32_t         pid;  
     uint32_t         status;         // process status: running, waiting, hanging
-    uint32_t         compution_time; // rest compution time
+    uint32_t         rect;           // rest execution time
     uint32_t         priority;       // dynamic priority,this priority will be decide in running time
     uint32_t         deadline;       // Absolute deadline, will be decided in running time
     MESSAGE*         msg;
     Lito_task*       task;           // Point to the task instance, 
-    void*            tcb;            // When you transplant this system to other platform, modify this!!!!!!!!
+    void*            tcb;            // When you adapt this system to other platform, modify this!!!!!!!!
+    struct Lito_TCB* prev; 
     struct Lito_TCB* next;           // next TCB of process
 }Lito_TCB;
 
@@ -63,43 +64,11 @@ typedef struct
     uint32_t task_number;
 }task_list;
 
-/*
-  Use a queue to manage the TCB,
-  a TCB represent a job.
-  //Here we should know the difference between job and task
-*/
-typedef struct
-{
-    Lito_TCB* list[MAX_TCB_NUMBER]; // a set of pointer point to TCB block which assigned by malloc
-    uint32_t tcb_number;
-} TCB_list;
-
-/*
-  This structrue is for running queue,
-  those scheduling algorithm implemented in schedule.c,
-  would operate on this queue. 
-*/
-typedef struct
-{
-    Lito_TCB* list[MAX_PRIORITY];
-    uint32_t tcb_number;
-}Lito_running_queue;
-
-
-/*Initial the TCB list*/
-int LT_TCB_list_init();
-
-/*Initial the task list*/
+/*Initialize the task list*/
 int LT_task_list_init();
 
-/*Initial the running queue*/
-int LT_running_queue_init();
-
-/*Insert new TCB into TCB list*/
-int TCB_list_insert(Lito_TCB* tcb);
-
-/*Remove a TCB from TCB list, indexed by pid*/
-Lito_TCB* TCB_list_remove(uint32_t pid);
+/*Initialize ready queue*/
+int32_t LT_ready_queue_init();
 
 /*Insert a task into task list*/
 int task_list_insert(Lito_task* task);
@@ -108,16 +77,19 @@ int task_list_insert(Lito_task* task);
 Lito_task* task_list_remove(uint32_t pid);
 
 /*Insert TCB into running queue*/
-int running_queue_insert(Lito_TCB* tcb);
+int ready_queue_insert(Lito_TCB* tcb);
 
 /*Remove TCB from running queue*/
-Lito_TCB* running_queue_remove(uint32_t pid);
+Lito_TCB* ready_queue_remove(uint32_t pid);
 
 /*Create new task*/
 uint32_t LT_create_task(Lito_task* task);
 
 /*Activate task*/
 int LT_activate_task(Lito_task* task);
+
+/*Setup the scheduling algorithm for LitoOS*/
+void LT_scheduling_algorithm_setup();
 
 /*Shell funtion for jobs*/
 void function_shell(Lito_task* task);

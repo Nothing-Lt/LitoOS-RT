@@ -1,16 +1,44 @@
+/**
+ * Task list is common array, size of each array is MAX_TCB_NUMBER,
+ * task_insert is just finding for an empty slot and put it at this slot.
+ * 
+ * Task_remove is function for removing variable of task.
+ * 
+ * running_queue is linkedlist
+ * 
+ * For any scheduling algorithm, 
+ * reorganize this running queue after new tcb inserted to achieve their goal.
+ */
+
 #include <task.h>
 #include <memory.h>
+#include <schedule.h>
 #include <interrupt.h>
 
 #include "../arch/x86/x86.h"
 #include "../arch/x86/x86_task.h"
 #include "../arch/x86/interrupt/x86_interrupt.h"
 
-task_list* task_l;
-TCB_list* TCB_l;
-Lito_running_queue* running_queue;
+Lito_TCB* ready_queue;
 
-volatile uint32_t pid;
+static task_list* task_l;
+
+volatile pid_t pid;
+
+extern SCHEDULING_ALGORITHM sa;
+
+void (*initialize)();
+
+int32_t (*insert_OK)(Lito_TCB* tcb1, Lito_TCB* tcb2);
+
+void (*running_queue_reorganize)();
+
+void (*scheduling)(Lito_TCB* tcbs[CPU_NUM],uint32_t* next_call);
+
+void (*job_exit)();
+
+void (*algorithm_exit)();
+
 
 /*
 Initial task list 
@@ -37,31 +65,6 @@ int32_t LT_task_list_init()
     return 1;
 }
 
-
-/*
-initial the TCB list
-Parameter:
-    No
-Return value:
-    0: failed (might because some mistake occured in malloc)
-    1: succesed
-*/
-int32_t LT_TCB_list_init()
-{
-    int32_t i;
-    
-    TCB_l = (TCB_list*)malloc(sizeof(TCB_list));
-    if(TCB_l == NULL){return 0;}
-
-    TCB_l->tcb_number = 0;
-    for(i=0; i<MAX_TCB_NUMBER; i++)
-    {
-        TCB_l->list[i] = NULL;
-    }
-
-    return 1;
-}
-
 /*
 Initialize the running queue
 Parameter:
@@ -70,77 +73,13 @@ Return value:
     0:failed
     1:Successed
 */
-int32_t LT_running_queue_init()
+int32_t LT_ready_queue_init()
 {
     int32_t i;
 
-    running_queue = (Lito_running_queue*)malloc(sizeof(Lito_running_queue));
-    if(running_queue == NULL){return 0;}
-
-    for(i=0;i<MAX_PRIORITY;i++)
-    {
-        running_queue->list[i] = NULL;
-    }
-    running_queue->tcb_number = 0;
+    ready_queue = NULL;
 
     return 1;
-}
-
-/*
-Insert tcb block into TCB list
-Parameter:
-    a pointer point to an Lito_TCB instant
-Return value:
-    0: Failed
-    1: Successed
-*/
-int32_t TCB_list_insert(Lito_TCB* tcb)
-{
-    int32_t i;
-
-    if(TCB_l==NULL || tcb==NULL){return 0;}
-
-    if(TCB_l->tcb_number >= MAX_TCB_NUMBER){return 0;}
-    
-    for(i=0;i<MAX_TCB_NUMBER;i++)
-    {
-        if(TCB_l->list[i] == NULL)
-        {
-            TCB_l->list[i] = tcb;
-            TCB_l->tcb_number++;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-/*
-Remove an element from TCB list
-Parameter:
-    process id of the element you want to remove
-Retuen value:
-    NULL: Failed
-    Pointer of TCb: Successed
-*/
-Lito_TCB* TCB_list_remove(uint32_t pid)
-{
-    int32_t i;
-    Lito_TCB* result = NULL;
- 
-    if(TCB_l==NULL || pid==0){return NULL;}
-
-    for(i=0;i<MAX_TCB_NUMBER;i++)
-    {
-        if(TCB_l->list[i]!=NULL && TCB_l->list[i]->pid==pid)
-        {
-            result = TCB_l->list[i];
-            TCB_l->list[i] = NULL;
-            TCB_l->tcb_number--;
-            return result;
-        }
-    }
-    return NULL;
 }
 
 /*
@@ -180,7 +119,7 @@ Return value:
     NULL: Failed
     Pointer of Lito_task: Successed
 */
-Lito_task* task_list_remove(uint32_t pid)
+Lito_task* task_list_remove(pid_t pid)
 {
     int32_t i;
     Lito_task* result = NULL;
@@ -200,91 +139,104 @@ Lito_task* task_list_remove(uint32_t pid)
     return NULL;
 }
 
-/*
-Insert TCB into running queue
-parameter:
-    tcb: Pointer point to an Lito_task instance
-Return value:
-    0:Failed
-    1:Successed
-*/
-int32_t running_queue_insert(Lito_TCB* tcb)
+/**
+ * Insert tcb to running queue,
+ * every time a job insert to running queue, 
+ * scheduling algorithm have to reorganize this queue
+ * Parameter:
+ *     Pointer of Lito_TCB structure
+ * Return value:
+ *     1: Successed
+ *     0: Failed
+ */
+int32_t ready_queue_insert(Lito_TCB* tcb)
 {
-    uint32_t tmp_priority = 0;
+    int32_t inserted = 0;
+    Lito_TCB** tcb_pp = NULL;
     
-    // Security check
-    if(running_queue==NULL || tcb==NULL || tcb->priority>=MAX_PRIORITY || tcb->priority<1){return 0;}
+    if(NULL == tcb){return 0;}
 
-    // Insert into running queue
-    tmp_priority = tcb->priority-1;
-    tcb->next = running_queue->list[tmp_priority];
-    running_queue->list[tmp_priority] = tcb;
-    running_queue->tcb_number++;
+    for(tcb_pp = &ready_queue ; *tcb_pp ; tcb_pp = &((*tcb_pp)->next))
+    {
+        // Check wether should I insert tcb to this position.
+        if(insert_OK(*tcb_pp,tcb))
+        {
+            // According to algorithm designed by developer, insert this tcb to this position.
+            tcb->next = *tcb_pp;
+            *tcb_pp = tcb;
+            inserted = 1;
+            break;
+        }
+    }
+
+    if(!inserted)
+    {
+        *tcb_pp = tcb;
+    }
 
     return 1;
 }
 
-/*
-Remove the TCB from running queue
-Parameter:
-    pid: the pid of TCB which you want to remvoe from running queue
-Return value:
-    NULL: Failed
-    Pointer of Lito_TCB: Susscced
-*/
-Lito_TCB* running_queue_remove(uint32_t pid)
+/**
+ * Insert tcb to running queue,
+ * every time a job insert to running queue, 
+ * scheduling algorithm have to reorganize this queue
+ * Parameter:
+ *     Pointer of Lito_TCB structure
+ * Return value:
+ *     Address of variable of Lito_TCB structure: Successed
+ *     NULL: Failed
+ */
+Lito_TCB* ready_queue_remove(pid_t pid)
 {
-    int32_t   i = 0; 
-    Lito_TCB*  result      = NULL;
-    Lito_TCB** tcb_pointer = NULL;
+    Lito_TCB** tcb_pp = NULL;
+    Lito_TCB*  result = NULL;
+    Lito_task* task_p = NULL;
 
-    if(running_queue == NULL||running_queue->tcb_number==0){return NULL;}
-
-    for(i=0;i<MAX_PRIORITY;i++)
+    for(tcb_pp = &ready_queue ; *tcb_pp ; tcb_pp = &((*tcb_pp)->next))
     {
-        tcb_pointer = &(running_queue->list[i]);
-        for(;*tcb_pointer!=NULL;tcb_pointer=&((*tcb_pointer)->next))
+        task_p = (*tcb_pp)->task;
+        if(NULL != task_p)
         {
-            if((*tcb_pointer)->pid==pid)
+            if(pid == task_p->pid)
             {
-                result       = *tcb_pointer;
-                *tcb_pointer = result->next;
-                return result;
+                result = *tcb_pp;
+                *tcb_pp = (*tcb_pp)->next;
+                break;
             }
         }
     }
-    
-    return NULL;
+
+    return result;
 }
 
-/* 
-Parameter:
-   Lito_task structure
-Return value:
-   0      :failed to create new task
-   others :Success
-*/
+/** 
+ * Create task and tcb block according to the information in Lito_task variable.
+ * Parameter:
+ *   Lito_task structure
+ * Return value:
+ * 0      :failed to create new task
+ * others :Success
+ */
 uint32_t LT_create_task(Lito_task* task)
 {
-
-    if(task == NULL){return 0;}
+    if(NULL == task){return 0;}
 
     task_list_insert(task);
 
-
-    if(task->flag&TG_CLOCK_EVENT)
+    if(task->flag & TG_CLOCK_EVENT)
     {
         /* those tasks triggered by Clock interruption,
            most for periodtc tasks */
         if(!IRQ_trigger_set(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
     }
-    else if(task->flag&TG_EXTERNAL_EVENT)
+    else if(task->flag & TG_EXTERNAL_EVENT)
     {
         /* Those tasks triggered by External interruption,
            most for aperiodic tasks */
         if(!IRQ_trigger_set(task->extra,task->flag,task)){while(1);}
     }
-    else if(task->flag&NORMAL_TASK)
+    else if(task->flag & NORMAL_TASK)
     {
         /* Those normal tasks,just run once, and maybe no deadline,
            start them immediately*/
@@ -307,19 +259,18 @@ int32_t LT_activate_task(Lito_task* task)
     Lito_TCB* tcb = NULL;
     TCB*       tt = NULL;
 
-    if(task==NULL || task_l==NULL || TCB_l==NULL){return 0;}
+    if((NULL == task) || (NULL == task_l)){return 0;}
   
     // No TCB belongs to this task in TCB_list, so alloc one,
     // fill it and insert into TCb_list and set something.
-    if(task->tcb == NULL)
+    if(NULL == task->tcb)
     {
         tcb = (Lito_TCB*)malloc(sizeof(Lito_TCB));
-        if(tcb == NULL){return 0;}
+        if(NULL == tcb){return 0;}
 
-        tcb->pid  = task->pid;
         tcb->task = task;
         tcb->tcb  = hardware_TCB_init(function_shell,task);
-        TCB_list_insert(tcb);
+        ready_queue_insert(tcb);
     }
     else{tcb = task->tcb;}
 
@@ -330,12 +281,12 @@ int32_t LT_activate_task(Lito_task* task)
 
     ///////////////////////////////////////////////////////////////
     ///This is for debugging
-    tt = (TCB*)tcb->tcb;
+    tt = (TCB*)(tcb->tcb);
     far_jump(0,tt->selector);
     ///////////////////////////////////////////////////////////////
 
     // Insert into running queue
-    running_queue_insert(tcb);
+    ready_queue_insert(tcb);
 
     return 0;
 }
@@ -369,39 +320,57 @@ void function_shell(Lito_task* task)
     void (*job)()   = NULL;
     Lito_TCB*   tcb = NULL;
 
-    if(task==NULL || task->function==NULL){return;}
+    if((NULL == task) || (NULL == task->function)){return;}
 
-    job = (void (*)())task->function;
+    job = (void (*)())(task->function);
     job();
     
-    if(task->flag&TG_CLOCK_EVENT)
+    // Following code will be executed after the job finished.
+    if((task->flag) & TG_CLOCK_EVENT)
     {
         // Reset the status of this job
-        // Let this job wait the clock event again
+        // Let this job wait for the clock event again
         if(!IRQ_trigger_set(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
         reset_task(task);
     }
-    else if(task->flag&TG_EXTERNAL_EVENT)
+    else if((task->flag) & TG_EXTERNAL_EVENT)
     {
         // Reset the status of this job
-        // Let this job wait the external event again
-        if(!IRQ_trigger_set(task->extra,task->flag,task)){while(1);}
+        // Let this job wait for the external event again
+        if(!IRQ_trigger_set(task->extra, task->flag, task)){while(1);}
         reset_task(task);
     }
     else // just a regular job,user just want it run once.
     {
-        // Insert some code to exit from TCB list
+        // Insert some code to exit from ready queue
         // Insert some code to exit from task list
-        running_queue_remove(task->pid);
-
-        tcb  = TCB_list_remove(task->pid);
-        if(tcb == NULL){while(1);}
+        tcb = ready_queue_remove(task->pid);
+        if(NULL == tcb){while(1);}
         else{free(tcb);}
 
         task = task_list_remove(task->pid);
-        if(task == NULL){while(1);}
+        if(NULL == task){while(1);}
         else{free(task);}
     }
     //Here must switch task, otherwise it will be a terrible mitstake 
+}
 
+/*
+ Setup scheduling algorithm to LitoOS.
+ In my imagenation, this scheduling algorithm is modifiedable.
+ So in the future, this part might be changed.
+*/
+void LT_scheduling_algorithm_setup()
+{
+    initialize = (void (*)())sa.initialize;
+    
+    insert_OK  = (int32_t (*)(Lito_TCB*,Lito_TCB*))sa.insert_OK;
+
+    running_queue_reorganize = (void (*)())sa.reorganize;
+
+    scheduling = (void (*)(Lito_TCB* [CPU_NUM],uint32_t* next_call))sa.scheduler;
+
+    job_exit = (void (*)())sa.job_exit;
+
+    algorithm_exit = (void (*)())sa.algorithm_exit;
 }

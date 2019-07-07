@@ -9,6 +9,12 @@
 #ifdef X86
 #include "../arch/x86/x86_stdint.h"
 #else
+
+#define UINT_MAX 0xffffffff
+
+#define INT_MAX  0x7fffffff
+#define INT_MIN  0x80000000
+
 typedef signed char    int8_t;
 typedef unsigned char  uint8_t;
 

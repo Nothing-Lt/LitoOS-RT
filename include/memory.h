@@ -38,7 +38,7 @@ typedef struct unused_block
 void LT_memory_block_init(uint32_t memory_add,uint32_t memory_size);
 
 /*this is the "malloc"*/
-void* malloc(uint32_t size);
+void* malloc(size_t size);
 
 /*this is the "free"*/
 int32_t free(void* add);

@@ -1,6 +1,11 @@
 #ifndef X86_STDINT_H
 #define X86_STDINT_H
 
+#define UINT_MAX 0xffffffff
+
+#define INT_MAX  0x7fffffff
+#define INT_MIN  0x80000000
+
 typedef signed char    int8_t;
 typedef unsigned char  uint8_t;
 
