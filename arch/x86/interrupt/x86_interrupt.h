@@ -587,7 +587,7 @@ void default_handler_soft(uint32_t error_ip,uint32_t error_code);
 // no user application could call this function.
 int IRQLINE_handler_set(uint32_t irq,void* function);
 
-int remove_IRQLINE_handler(uint32_t irq);
+int IRQLINE_handler_remove(uint32_t irq);
 
 // default hardware interrupt handler
 void default_send_recv(void* msg);

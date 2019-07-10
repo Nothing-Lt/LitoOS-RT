@@ -1,3 +1,31 @@
+/*
+    In this file, function for interrupt was defined.
+
+    IRQLINE_NUMBER irq line.
+    For each IRQ line, maximum MINOR_DEV_NUMBER minor device is allowed.
+
+    In LitoOS, the way I organize interrupt is:
+        1. For each system, it has several IRQ line, each IRQ line has one handler, 
+           and each handler is initialized as defualt_handler_hard.
+           If developer wants to modify the handler of one IRQ line, he can use sys_IRQLINE_set function. 
+           Function sys_IRQLINE_reset function can reset the handler to be the default handler.
+        2. For each IRQ line, multiple device might bind with one IRQ line, 
+           so I defined a function IRQ_trigger_set() function, 
+           developer set a task or fucntion triggered by this calling this function,
+           but, if you want to use this function and make sure this works, 
+           please don't use sys_IRQLINE_set, because only default check the handler list.
+        3. Actually, developer should not touch sys_IRQLINE_set function, this should used only by kernel developer,
+           so normal developer should just use LT_IRQ_trigger_set fucntion.
+
+    Function:
+        void LT_IRQ_desc_table_init() 
+        For initializing the interrupt handler 
+
+        sys_IRQLINE_set
+        For setting the handler of IRQ line, 
+
+*/
+
 #include <interrupt.h>
 
 #include <task.h>
@@ -32,91 +60,199 @@ void LT_IRQ_desc_table_init()
 }
 
 /*
-    Regist a device to specific IRQ line.
+    Set a function to specific IRQ line.
     Return value:
     -1: FAILED
     Otherwise: SUCCESS
 */
-int sys_IRQLINE_regist(uint32_t irq_line,uint32_t flag,void* dev,uint32_t priority)
+int32_t sys_IRQLINE_set(uint32_t irq_line,void* handler)
 {
-    if(irq_line >= IRQLINE_NUMBER){return -1;}
-
-    // Special case for software interrupt handler.
-    if(irq_line == 0x40)
+    if(irq_line >= IRQLINE_NUMBER)
     {
-        // If success,return IRQ line number.
-        if(IRQLINE_handler_set(irq_line,dev)){return irq_line;}
+        return -1;
     }
-    else
+
+    // If success,return IRQ line number.
+    if(IRQLINE_handler_set(irq_line,handler))
     {
-        //I didn't figured out what will happened here.
+        return irq_line;
     }
 
     // Failed
     return -1;
 }
 
-int sys_IRQLINE_remove(uint32_t irq_line,uint32_t minor,void* dev)
+/*
+    Reset function from specific IRQ line.
+    Return value:
+    -1: FALIED
+    Other: SUCCESS
+*/ 
+int32_t sys_IRQLINE_reset(uint32_t irq_line)
 {
+    if(MINOR_DEV_NUMBER <= irq_line)
+    {
+        return -1;
+    }
+
+    if(0x40 == irq_line)
+    {
+        if(IRQLINE_handler_set(irq_line,default_handler_soft))
+        {
+            return irq_line;
+        }
+    }
+
+    if(IRQLINE_handler_set(irq_line,default_handler_hard))
+    {
+        return irq_line;
+    }
+    
     return -1;
 }
 
-int IRQ_trigger_set(uint32_t irq_line,uint32_t flag,Lito_task* task)
+/*
+    Regist a device to specific IRQ line
+    Return value:
+    -1:    FALIED
+    Other: SUCCESS
+ */
+int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lito_task* task,void* function)
 {
-    if(irq_line>=IRQLINE_NUMBER || task==NULL){return 0;}
+    int32_t minor_idx = 0;
 
-    task->next = (Lito_task*)(IRQ_desc_table[irq_line].minor_table[0].dev);
-    IRQ_desc_table[irq_line].minor_table[0].dev = (void*)task;
-    IRQ_desc_table[irq_line].minor_table[0].flag = task->flag;
+    if(irq_line>=IRQLINE_NUMBER || task==NULL){return -1;}
 
-    return 1;
+    // Out of bound
+    if(minor_num >= MINOR_DEV_NUMBER)
+    {
+        return -1;
+    }
+
+    // Not available
+    if((-1 != minor_num) && (UNUSED != IRQ_desc_table[irq_line].minor_table[minor_num].flag))
+    {
+        return -1;
+    }
+
+    // Corresponding parameter should not be NULL
+    if(FUNCTION_FLAG == flag)
+    {
+        if(NULL == function)
+        {
+            return -1;
+        }
+    }
+    else if((MESSAGE_FLAG == flag) || (TASK_FLAG == flag))
+    {
+        if(NULL == task)
+        {
+            return -1;
+        }
+    }
+
+    // looking for 
+    if(-1 == minor_num)
+    {
+        for(minor_idx = 0 ; minor_idx < MINOR_DEV_NUMBER ; minor_idx++)
+        {
+            if(UNUSED == IRQ_desc_table[irq_line].minor_table[minor_idx].flag)
+            {
+                break;
+            }
+        }
+
+        minor_num = minor_idx;
+    }
+    
+    // Found a position
+    if(MINOR_DEV_NUMBER > minor_num)
+    {
+        if(FUNCTION_FLAG == flag)
+        {
+            IRQ_desc_table[irq_line].minor_table[minor_num].dev = (void*)function;
+            IRQ_desc_table[irq_line].minor_table[minor_num].flag = FUNCTION_FLAG;
+        }
+        else if(TASK_FLAG == flag)
+        {
+            IRQ_desc_table[irq_line].minor_table[minor_num].dev = (void*)task;
+            IRQ_desc_table[irq_line].minor_table[minor_num].flag = TASK_FLAG;
+        }
+        else if(MESSAGE_FLAG == flag)
+        {
+            IRQ_desc_table[irq_line].minor_table[minor_num].dev = NULL;
+            IRQ_desc_table[irq_line].minor_table[minor_num].flag = MESSAGE_FLAG;
+            IRQ_desc_table[irq_line].minor_table[minor_num].pid = task->pid;
+        }
+
+        return minor_num;
+    }
+
+    return -1;
 }
 
-void default_handler_hard(uint32_t irq)
+/*
+    Reset the minor device on irq line 
+    -1: FAILED
+    Other: SUCCESS
+*/
+int32_t LT_IRQ_trigger_reset(uint32_t irq_line,int32_t minor_num)
 {
-    int i;
+    int32_t minor_idx = 0;
+
+    if(IRQLINE_NUMBER <= irq_line)
+    {
+        return -1;
+    }
+
+    if(MINOR_DEV_NUMBER <= minor_num)
+    {
+        return -1;
+    }
+
+    if(-1 == minor_num)
+    {
+        for(minor_idx = 0 ; minor_idx < MINOR_DEV_NUMBER ; minor_idx++)
+        {
+            IRQ_desc_table[irq_line].minor_table[minor_idx].flag = UNUSED;            
+        }
+
+        return MINOR_DEV_NUMBER;
+    }
+
+    IRQ_desc_table[irq_line].minor_table[minor_num].flag = UNUSED;
+
+    return minor_num;
+}
+
+void default_handler_hard(uint32_t irq_line)
+{
+    int32_t minor_idx;
     IRQ_minor_desc* imd = NULL;
-    Lito_task*      task= NULL;
-    Lito_task*      tmp = NULL;
+    void (*handle_function)() = NULL;
     //Message msg;
     
     // check if this irq is legle 
-    if( (irq < REUSEABLE_IRQLINE) || (irq > IRQLINE_NUMBER) ){return;}
+    if( (irq_line < REUSEABLE_IRQLINE) || (irq_line > IRQLINE_NUMBER) ){return;}
     
-    // Activate those tasks which are waitting for this interrupt.
-    // Those tasks waked up is triggered by external event.
-    // For each IRQ line, the first minor descriptor (minor_table[0]) is for Keeping the task structure,
-    // for those tasks request for this external event
-    imd = &(IRQ_desc_table[irq].minor_table[0]);
-    if(imd->flag != UNUSED)
+    imd = IRQ_desc_table[irq_line].minor_table;
+    for(minor_idx = 0 ; minor_idx < MINOR_DEV_NUMBER ; minor_idx++)
     {
-        if(imd->flag & TG_EXTERNAL_EVENT)
+        switch(imd[minor_idx].flag)
         {
-            task = (Lito_task*)(imd->dev);
-        }
-
-        // This while loop is for waking up those tasks waitting for this external event
-        while(task != NULL)
-        {
-            LT_activate_task(task);
-            tmp       = task;
-            task      = task->next;
-            tmp->next = NULL;
+            case FUNCTION_FLAG:
+                handle_function = (void(*)())imd[minor_idx].dev;
+                handle_function();
+            break;
+            case TASK_FLAG:
+                LT_activate_task((Lito_task*)imd[minor_idx].dev);
+            break;
+            case MESSAGE_FLAG:
+                // Send message
+            break;
+            case UNUSED:
+            default:
+            break;
         }
     }
-
-    // Some tasks need this external interrupt
-    // send those tasks message by using IPC
-    if(IRQ_desc_table[irq].registed_number != 0)
-    {
-        for( i=1 ; i<MINOR_DEV_NUMBER ; i++ )
-        {
-            imd = &(IRQ_desc_table[irq].minor_table[i]);
-            if(imd->flag!=UNUSED)
-            {
-                //Message something
-            }
-        }
-    }
-    return;
 }

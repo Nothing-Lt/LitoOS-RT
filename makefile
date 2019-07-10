@@ -6,7 +6,7 @@ os:
 	@cd arch && make arch_x86 CC=$(CC) AS=$(AS) --no-print-directory
 	@cd test && make test CC=$(CC) --no-print-directory
 	@cd kernel && make kernel CC=$(CC) --no-print-directory
-	ld -m elf_i386 main.o LitoOS.o memory.o message.o schedule.o task.o interrupt.o hd.o hd_memory.o hd_lib.o hd_interrupt.o hd_interrupt_lib.o hd_task.o -o sys.bin -Ttext 0x200000 -e main --oformat binary
+	ld -m elf_i386 main.o LitoOS.o memory.o message.o schedule.o task.o timer.o interrupt.o hd.o hd_memory.o hd_lib.o hd_interrupt.o hd_interrupt_lib.o hd_task.o -o sys.bin -Ttext 0x200000 -e main --oformat binary
 	# check the fd file if exsists
 	if [ ! -x "fd" ]; then mkdir fd; fi
 	#############################

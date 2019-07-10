@@ -70,5 +70,5 @@ void sys_message_handler(MESSAGE* msg)
 */
 int LT_message_init()
 {
-    return sys_IRQLINE_regist(0x40,0,sys_message_handler,0);
+    return sys_IRQLINE_set(0x40,sys_message_handler);
 }

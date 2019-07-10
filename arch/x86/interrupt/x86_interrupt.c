@@ -39,7 +39,7 @@ int IRQLINE_handler_set(uint32_t irq,void* function)
 
 // remove and set the default handler to No.irq line
 // this function only for system, not for user program
-int remove_IRQLINE_handler(uint32_t irq)
+int IRQLINE_handler_remove(uint32_t irq)
 {
     if(irq>=IRQLINE_NUMBER)       // out of range of IRQ handler table
     {

@@ -1,7 +1,7 @@
 NO_STDLIB=-nostdlib -fno-builtin
 NO_PIE=-fno-pie
 CFLAG=-I ../include/ $(NO_STDLIB) $(NO_PIE) -Wall -m32 -c
-OBJECTS=LitoOS.o task.o memory.o message.o schedule.o interrupt.o
+OBJECTS=LitoOS.o task.o memory.o message.o schedule.o interrupt.o timer.o
 
 LitoOS.o:LitoOS.c
 	$(CC) $(CFLAG) -o LitoOS.o LitoOS.c
@@ -20,6 +20,9 @@ schedule.o:schedule.c
 
 interrupt.o:interrupt.o
 	$(CC) $(CFLAG) -o interrupt.o interrupt.c
+
+timer.o:timer.c
+	$(CC) $(CFLAG) -o timer.o timer.c
 
 kernel:$(OBJECTS)
 	mv $(OBJECTS) ../

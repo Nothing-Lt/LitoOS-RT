@@ -19,6 +19,8 @@
 #include "../arch/x86/x86_task.h"
 #include "../arch/x86/interrupt/x86_interrupt.h"
 
+extern uint32_t system_time;
+
 Lito_TCB* ready_queue;
 
 static task_list* task_l;
@@ -75,8 +77,6 @@ Return value:
 */
 int32_t LT_ready_queue_init()
 {
-    int32_t i;
-
     ready_queue = NULL;
 
     return 1;
@@ -228,13 +228,13 @@ uint32_t LT_create_task(Lito_task* task)
     {
         /* those tasks triggered by Clock interruption,
            most for periodtc tasks */
-        if(!IRQ_trigger_set(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
+        if(!LT_IRQ_trigger_set(CLOCK_IRQ_LINE,-1,task->flag,task,NULL)){while(1);}
     }
     else if(task->flag & TG_EXTERNAL_EVENT)
     {
         /* Those tasks triggered by External interruption,
            most for aperiodic tasks */
-        if(!IRQ_trigger_set(task->extra,task->flag,task)){while(1);}
+        if(!LT_IRQ_trigger_set(task->extra,-1,task->flag,task,NULL)){while(1);}
     }
     else if(task->flag & NORMAL_TASK)
     {
@@ -247,7 +247,7 @@ uint32_t LT_create_task(Lito_task* task)
 }
 
 /*
-Activativate specific task
+Activativate specific task, more specific, insert task into ready queue and waiting for scheduling.
 Parameter:
    A pointer point at a Lito_task instant
 Return value:
@@ -330,14 +330,14 @@ void function_shell(Lito_task* task)
     {
         // Reset the status of this job
         // Let this job wait for the clock event again
-        if(!IRQ_trigger_set(CLOCK_IRQ_LINE,task->flag,task)){while(1);}
+        if(!LT_IRQ_trigger_set(CLOCK_IRQ_LINE,-1,task->flag,task,NULL)){while(1);}
         reset_task(task);
     }
     else if((task->flag) & TG_EXTERNAL_EVENT)
     {
         // Reset the status of this job
         // Let this job wait for the external event again
-        if(!IRQ_trigger_set(task->extra, task->flag, task)){while(1);}
+        if(!LT_IRQ_trigger_set(task->extra,-1,task->flag, task,NULL)){while(1);}
         reset_task(task);
     }
     else // just a regular job,user just want it run once.
@@ -373,4 +373,15 @@ void LT_scheduling_algorithm_setup()
     job_exit = (void (*)())sa.job_exit;
 
     algorithm_exit = (void (*)())sa.algorithm_exit;
+}
+
+void scheduling_activate()
+{
+    uint32_t next_call_time = 0;
+    Lito_TCB* tcb[CPU_NUM] = {NULL};
+
+    scheduling(tcb,&next_call_time);
+    next_call_time += system_time;
+
+    LT_IRQ_trigger_set(CLOCK_IRQ_LINE,0,0,NULL,NULL);
 }

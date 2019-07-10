@@ -94,4 +94,7 @@ void LT_scheduling_algorithm_setup();
 /*Shell funtion for jobs*/
 void function_shell(Lito_task* task);
 
+/*Activate scheduling*/
+void scheduling_activate();
+
 #endif
