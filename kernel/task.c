@@ -228,7 +228,8 @@ uint32_t LT_create_task(Lito_task* task)
     {
         /* those tasks triggered by Clock interruption,
            most for periodtc tasks */
-        if(!LT_IRQ_trigger_set(CLOCK_IRQ_LINE,-1,task->flag,task,NULL)){while(1);}
+
+        
     }
     else if(task->flag & TG_EXTERNAL_EVENT)
     {
@@ -325,19 +326,10 @@ void function_shell(Lito_task* task)
     job = (void (*)())(task->function);
     job();
     
-    // Following code will be executed after the job finished.
-    if((task->flag) & TG_CLOCK_EVENT)
+    // Triggered by external or clock event
+
+    if(((task->flag) & TG_EXTERNAL_EVENT) || ((task->flag) & TG_CLOCK_EVENT)) 
     {
-        // Reset the status of this job
-        // Let this job wait for the clock event again
-        if(!LT_IRQ_trigger_set(CLOCK_IRQ_LINE,-1,task->flag,task,NULL)){while(1);}
-        reset_task(task);
-    }
-    else if((task->flag) & TG_EXTERNAL_EVENT)
-    {
-        // Reset the status of this job
-        // Let this job wait for the external event again
-        if(!LT_IRQ_trigger_set(task->extra,-1,task->flag, task,NULL)){while(1);}
         reset_task(task);
     }
     else // just a regular job,user just want it run once.
@@ -350,7 +342,7 @@ void function_shell(Lito_task* task)
 
         task = task_list_remove(task->pid);
         if(NULL == task){while(1);}
-        else{free(task);}
+        else{free(task);}        
     }
     //Here must switch task, otherwise it will be a terrible mitstake 
 }

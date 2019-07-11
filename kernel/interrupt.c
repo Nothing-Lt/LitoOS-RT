@@ -24,6 +24,12 @@
         sys_IRQLINE_set
         For setting the handler of IRQ line, 
 
+        LT_IRQ_trigger_set()
+        For register the handler or task to specific IRQ line
+
+        LT_IRQ_trigger_reset()
+        For remove handler or task from specific IRQ line
+
 */
 
 #include <interrupt.h>
