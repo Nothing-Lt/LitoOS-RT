@@ -14,6 +14,7 @@
 #include <memory.h>
 #include <schedule.h>
 #include <interrupt.h>
+#include <timer.h>
 
 #include "../arch/x86/x86.h"
 #include "../arch/x86/x86_task.h"
@@ -228,14 +229,14 @@ uint32_t LT_create_task(Lito_task* task)
     {
         /* those tasks triggered by Clock interruption,
            most for periodtc tasks */
-
+        if(-1 == LT_timer_event_register(system_time + task->period,task->flag,task->pid,NULL,task)){while(1);}
         
     }
     else if(task->flag & TG_EXTERNAL_EVENT)
     {
         /* Those tasks triggered by External interruption,
            most for aperiodic tasks */
-        if(!LT_IRQ_trigger_set(task->extra,-1,task->flag,task,NULL)){while(1);}
+        if(-1 == LT_IRQ_trigger_register(task->extra,-1,task->flag,task,NULL)){while(1);}
     }
     else if(task->flag & NORMAL_TASK)
     {
@@ -375,5 +376,5 @@ void scheduling_activate()
     scheduling(tcb,&next_call_time);
     next_call_time += system_time;
 
-    LT_IRQ_trigger_set(CLOCK_IRQ_LINE,0,0,NULL,NULL);
+    LT_IRQ_trigger_register(CLOCK_IRQ_LINE,0,0,NULL,NULL);
 }

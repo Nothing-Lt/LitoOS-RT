@@ -7,10 +7,13 @@
 
 #define MINOR_DEV_NUMBER    25
 
-#define UNUSED              0
-#define FUNCTION_FLAG       8
-#define TASK_FLAG           16
-#define MESSAGE_FLAG        32
+typedef enum
+{
+    FLAG_UNUSED   = 0,
+    FLAG_FUNCTION = 8,
+    FLAG_TASK     = 16,
+    FLAG_MESSAGE  = 32
+}EVENT_FLAG;
 
 #define WANT_ERR_CODE       1
 #define WANT_ERR_IP         2
@@ -19,7 +22,7 @@
 typedef struct
 {
     void*    dev;
-    uint32_t flag;
+    EVENT_FLAG flag;
     uint32_t pid;
     uint32_t priority;
 }IRQ_minor_desc;
@@ -36,9 +39,9 @@ int32_t sys_IRQLINE_set(uint32_t irq_line,void* handler);
 
 int32_t sys_IRQLINE_reset(uint32_t irq_line);
 
-int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lito_task* task,void* function);
+int32_t LT_IRQ_trigger_register(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lito_task* task,void* function);
 
-int32_t LT_IRQ_trigger_reset(uint32_t irq_line,int32_t minor_num);
+int32_t LT_IRQ_trigger_remove(uint32_t irq_line,int32_t minor_num);
 
 void enable_IRQ();
 

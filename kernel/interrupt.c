@@ -58,7 +58,7 @@ void LT_IRQ_desc_table_init()
         {
             minor_desc           = &(IRQ_desc_table[i].minor_table[j]);
             minor_desc->dev      = NULL;
-            minor_desc->flag     = UNUSED;
+            minor_desc->flag     = FLAG_UNUSED;
             minor_desc->pid      = \
             minor_desc->priority = 0;
         }
@@ -118,12 +118,12 @@ int32_t sys_IRQLINE_reset(uint32_t irq_line)
 }
 
 /*
-    Regist a device to specific IRQ line
+    Register a device to specific IRQ line
     Return value:
     -1:    FALIED
     Other: SUCCESS
  */
-int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lito_task* task,void* function)
+int32_t LT_IRQ_trigger_register(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lito_task* task,void* function)
 {
     int32_t minor_idx = 0;
 
@@ -136,20 +136,20 @@ int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lit
     }
 
     // Not available
-    if((-1 != minor_num) && (UNUSED != IRQ_desc_table[irq_line].minor_table[minor_num].flag))
+    if((-1 != minor_num) && (FLAG_UNUSED != IRQ_desc_table[irq_line].minor_table[minor_num].flag))
     {
         return -1;
     }
 
     // Corresponding parameter should not be NULL
-    if(FUNCTION_FLAG == flag)
+    if(FLAG_FUNCTION == flag)
     {
         if(NULL == function)
         {
             return -1;
         }
     }
-    else if((MESSAGE_FLAG == flag) || (TASK_FLAG == flag))
+    else if((FLAG_MESSAGE == flag) || (FLAG_TASK == flag))
     {
         if(NULL == task)
         {
@@ -162,7 +162,7 @@ int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lit
     {
         for(minor_idx = 0 ; minor_idx < MINOR_DEV_NUMBER ; minor_idx++)
         {
-            if(UNUSED == IRQ_desc_table[irq_line].minor_table[minor_idx].flag)
+            if(FLAG_UNUSED == IRQ_desc_table[irq_line].minor_table[minor_idx].flag)
             {
                 break;
             }
@@ -174,20 +174,20 @@ int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lit
     // Found a position
     if(MINOR_DEV_NUMBER > minor_num)
     {
-        if(FUNCTION_FLAG == flag)
+        if(FLAG_FUNCTION == flag)
         {
             IRQ_desc_table[irq_line].minor_table[minor_num].dev = (void*)function;
-            IRQ_desc_table[irq_line].minor_table[minor_num].flag = FUNCTION_FLAG;
+            IRQ_desc_table[irq_line].minor_table[minor_num].flag = FLAG_FUNCTION;
         }
-        else if(TASK_FLAG == flag)
+        else if(FLAG_TASK == flag)
         {
             IRQ_desc_table[irq_line].minor_table[minor_num].dev = (void*)task;
-            IRQ_desc_table[irq_line].minor_table[minor_num].flag = TASK_FLAG;
+            IRQ_desc_table[irq_line].minor_table[minor_num].flag = FLAG_TASK;
         }
-        else if(MESSAGE_FLAG == flag)
+        else if(FLAG_MESSAGE == flag)
         {
             IRQ_desc_table[irq_line].minor_table[minor_num].dev = NULL;
-            IRQ_desc_table[irq_line].minor_table[minor_num].flag = MESSAGE_FLAG;
+            IRQ_desc_table[irq_line].minor_table[minor_num].flag = FLAG_MESSAGE;
             IRQ_desc_table[irq_line].minor_table[minor_num].pid = task->pid;
         }
 
@@ -198,11 +198,11 @@ int32_t LT_IRQ_trigger_set(uint32_t irq_line,int32_t minor_num,uint32_t flag,Lit
 }
 
 /*
-    Reset the minor device on irq line 
+    Remove the minor device on irq line 
     -1: FAILED
     Other: SUCCESS
 */
-int32_t LT_IRQ_trigger_reset(uint32_t irq_line,int32_t minor_num)
+int32_t LT_IRQ_trigger_remove(uint32_t irq_line,int32_t minor_num)
 {
     int32_t minor_idx = 0;
 
@@ -220,13 +220,13 @@ int32_t LT_IRQ_trigger_reset(uint32_t irq_line,int32_t minor_num)
     {
         for(minor_idx = 0 ; minor_idx < MINOR_DEV_NUMBER ; minor_idx++)
         {
-            IRQ_desc_table[irq_line].minor_table[minor_idx].flag = UNUSED;            
+            IRQ_desc_table[irq_line].minor_table[minor_idx].flag = FLAG_UNUSED;            
         }
 
         return MINOR_DEV_NUMBER;
     }
 
-    IRQ_desc_table[irq_line].minor_table[minor_num].flag = UNUSED;
+    IRQ_desc_table[irq_line].minor_table[minor_num].flag = FLAG_UNUSED;
 
     return minor_num;
 }
@@ -246,17 +246,17 @@ void default_handler_hard(uint32_t irq_line)
     {
         switch(imd[minor_idx].flag)
         {
-            case FUNCTION_FLAG:
+            case FLAG_FUNCTION:
                 handle_function = (void(*)())imd[minor_idx].dev;
                 handle_function();
             break;
-            case TASK_FLAG:
+            case FLAG_TASK:
                 LT_activate_task((Lito_task*)imd[minor_idx].dev);
             break;
-            case MESSAGE_FLAG:
+            case FLAG_MESSAGE:
                 // Send message
             break;
-            case UNUSED:
+            case FLAG_UNUSED:
             default:
             break;
         }
