@@ -1,0 +1,3 @@
+semaphore_mutex.c:12:6:LT_mutex_init	0	static
+semaphore_mutex.c:21:17:LT_mutex_lock	16	static
+semaphore_mutex.c:41:6:LT_mutex_unlock	0	static
