@@ -24,12 +24,17 @@ typedef enum{
 }LT_TIMER_EVENT_FLAG;
 
 /**
+ * @brief Definition of handler function.
+ */
+typedef void handler_func();
+
+/**
  * @brief Definition of timer structure.
  */
 typedef struct{
 	LT_TIMER_EVENT_FLAG flag;
 	uint32_t issue_at;   /*!< The handler will be executed now. */
-	void (*handler)(); /*!< The function will be executed. */
+	handler_func* handler; /*!< The handler function will be executed. */
 	LT_semaphore_t* semaphore_queue; /*!< The semaphore queue */
 }LT_timer_event_t;
 
@@ -59,7 +64,7 @@ LT_error_code_t LT_timer_init();
  * @retval LT_ERR_PARAMETER Error with parameter.
  * @retval LT_ERR_FAILED This operation is failed, might because of malloc returned NULL.
  */
-LT_error_code_t LT_timer_event_regist(LT_timer_event_item_t** timer_event_handle,uint32_t issue_at, void (*handler)(), LT_semaphore_t* semaphore_queue, LT_TIMER_EVENT_FLAG flag);
+LT_error_code_t LT_timer_event_regist(LT_timer_event_item_t** timer_event_handle,uint32_t issue_at, handler_func* handler, LT_semaphore_t* semaphore_queue, LT_TIMER_EVENT_FLAG flag);
 
 /**
  * @brief Remove a registered timer event.
