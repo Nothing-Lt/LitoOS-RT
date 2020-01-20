@@ -104,7 +104,6 @@ LT_TCB_item_t* LT_task_create(Lito_task_t* task)
     return tcb_item;
 }
 
-
 void LT_task_switch()
 {
 	LT_tcb_item_running_task_update();

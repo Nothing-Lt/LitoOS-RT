@@ -3,7 +3,6 @@
 
 #include "../LitoOS/include/task.h"
 
-
 I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart1;
 
@@ -25,9 +24,7 @@ void hardware_init()
   SystemClock_Config();
 
   MX_GPIO_Init();
-
   MX_USART1_UART_Init();
-
 }
 
 uint32_t hardware_tick_get()
@@ -47,21 +44,19 @@ void hardware_context_switch()
 	*((uint32_t*)0xE000ED04) = 0x10000000;
 }
 
-void hardware_TCB_init(TCB_t* tcb,void* function,void* parameter,void* stack_pointer,size_t stack_size)
+void hardware_TCB_init(TCB_t* tcb,function* func,void* parameter,void* stack_pointer,size_t stack_size)
 {
 	CONTENT_t* tcb_in_stack = NULL;
 
-	if((NULL == tcb) || (NULL == function) || (NULL == stack_pointer)){
+	if((NULL == tcb) || (NULL == func) || (NULL == stack_pointer)){
 		return;
 	}
 
-	tcb_in_stack = (CONTENT_t*)(((uint32_t)stack_pointer) + stack_size - sizeof(TCB_t) - sizeof(CONTENT_t));
-
-	tcb->stack_pointer = (uint32_t)tcb_in_stack;
+	tcb_in_stack = tcb->stack_pointer = (CONTENT_t*)(((uint32_t)stack_pointer) + stack_size - sizeof(TCB_t) - sizeof(CONTENT_t));
 
 	// in the future, this can be the return address.
 	tcb_in_stack->lr = (uint32_t)lr_temp;
-	tcb_in_stack->pc = ((uint32_t)function) & 0xfffffffe;
+	tcb_in_stack->pc = ((uint32_t)func) & 0xfffffffe;
 
 	// in the future, this can be the parameter.
 	tcb_in_stack->r0 = (uint32_t)parameter;
@@ -101,12 +96,17 @@ void LT_IRQ_disable()
   * @brief System Clock Configuration
   * @retval None
   */
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -119,7 +119,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -173,13 +173,15 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
 }
+
 /**
  * This is the dummy task in LitoOS-RT,
  * it should be the very first task in this OS.
  */
-void LT_dummy_task(void* arg)
+void LT_dummy_task(const void* arg)
 {
 	while(1){
+		HAL_Delay(500);
 	}
 }
 

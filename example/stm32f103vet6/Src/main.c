@@ -67,13 +67,13 @@ int main(void)
 
 	task.pid = 1;
 	task.flag = 0;
-	task.function = (void*)task1;
+	task.function = &task1;
 	task.stack_size = 0x200;
 	task.parameter = &parameter;
 	LT_task_create(&task);
 
 	task.pid = 3;
-	task.function = (void*)task2;
+	task.function = &task2;
 	task.stack_size = 0x200;
 	task.parameter = NULL;
 	LT_task_create(&task);

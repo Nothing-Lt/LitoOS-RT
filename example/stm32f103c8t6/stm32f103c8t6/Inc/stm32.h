@@ -39,6 +39,8 @@ typedef struct{
 	CONTENT_t* stack_pointer;
 }TCB_t;
 
+typedef void function(const void*);
+
 void hardware_init();
 
 uint32_t hardware_tick_get();
@@ -47,13 +49,13 @@ void Error_Handler(void);
 
 void hardware_context_switch();
 
-void hardware_TCB_init(TCB_t* tcb,void* function,void* parameter,void* stack_pointer,size_t stack_size);
+void hardware_TCB_init(TCB_t* tcb,function* func,void* parameter,void* stack_pointer,size_t stack_size);
 
 void LT_IRQ_enable();
 
 void LT_IRQ_disable();
 
-void LT_dummy_task(void* arg);
+void LT_dummy_task(const void* arg);
 
 void LT_first_task_start();
 

@@ -24,7 +24,7 @@ void Lito_init()
 	LT_IRQ_disable();
 
 	dummy_task.flag = 0;
-	dummy_task.function = (void*)LT_dummy_task;
+	dummy_task.function = &LT_dummy_task;
 	dummy_task.parameter = NULL;
 	dummy_task.pid = pid = 1;
 	dummy_task.stack_size = 256;

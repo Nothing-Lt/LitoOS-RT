@@ -24,17 +24,22 @@ typedef enum{
 	PENDING = 0x4,/*!< PENDING */
 }Lito_TASK_STATUS;
 
+/**
+ * @brief Definition of task function.
+ * @param param Parameter for this function.
+ */
+typedef void task_func(const void* param);
 
 /**
  * @brief Definition of task structure. This structure only used in creating new task.
  */
 typedef struct Lito_task_t
 {
-    pid_t    pid;
-    uint32_t flag;      // This task is periodic or aperiodic
-    size_t   stack_size;
-    void*    parameter;
-    void*    function;  // Entry point of this task
+    pid_t      pid;
+    uint32_t   flag;      // This task is periodic or aperiodic
+    size_t     stack_size;
+    void*      parameter;
+    task_func* function;  // Entry point of this task
 }Lito_task_t;
 
 
@@ -43,13 +48,13 @@ typedef struct Lito_task_t
  */
 typedef struct Lito_TCB_t
 {
-    pid_t    pid;
-    uint32_t status;         // process status: running, waiting, hanging
-    uint32_t priority;       // dynamic priority,this priority will be decide in running time
-    uint32_t deadline;       // Absolute deadline, will be decided in running time
-    void*    function;
-    size_t   stack_size;
-    TCB_t    tcb;            // When you adapt this system to other platform, modify this!!!!!!!!
+    pid_t      pid;
+    uint32_t   status;         // process status: running, waiting, hanging
+    uint32_t   priority;       // dynamic priority,this priority will be decide in running time
+    uint32_t   deadline;       // Absolute deadline, will be decided in running time
+    task_func* function;
+    size_t     stack_size;
+    TCB_t      tcb;            // When you adapt this system to other platform, modify this!!!!!!!!
 }Lito_TCB_t;
 
 /**

@@ -44,11 +44,11 @@ void hardware_context_switch()
 	*((uint32_t*)0xE000ED04) = 0x10000000;
 }
 
-void hardware_TCB_init(TCB_t* tcb,void* function,void* parameter,void* stack_pointer,size_t stack_size)
+void hardware_TCB_init(TCB_t* tcb,function* func,void* parameter,void* stack_pointer,size_t stack_size)
 {
 	CONTENT_t* tcb_in_stack = NULL;
 
-	if((NULL == tcb) || (NULL == function) || (NULL == stack_pointer)){
+	if((NULL == tcb) || (NULL == func) || (NULL == stack_pointer)){
 		return;
 	}
 
@@ -56,7 +56,7 @@ void hardware_TCB_init(TCB_t* tcb,void* function,void* parameter,void* stack_poi
 
 	// in the future, this can be the return address.
 	tcb_in_stack->lr = (uint32_t)lr_temp;
-	tcb_in_stack->pc = ((uint32_t)function) & 0xfffffffe;
+	tcb_in_stack->pc = ((uint32_t)func) & 0xfffffffe;
 
 	// in the future, this can be the parameter.
 	tcb_in_stack->r0 = (uint32_t)parameter;
@@ -186,7 +186,7 @@ static void MX_USART1_UART_Init(void)
  * This is the dummy task in LitoOS-RT,
  * it should be the very first task in this OS.
  */
-void LT_dummy_task(void* arg)
+void LT_dummy_task(const void* arg)
 {
 	while(1){
 		HAL_Delay(500);
