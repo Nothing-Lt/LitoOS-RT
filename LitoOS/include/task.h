@@ -35,6 +35,7 @@ typedef struct Lito_task_t
 {
     pid_t      pid;
     uint32_t   flag;      // This task is periodic or aperiodic
+    uint32_t   priority;
     size_t     stack_size;
     void*      parameter;
     task_func* function;  // Entry point of this task

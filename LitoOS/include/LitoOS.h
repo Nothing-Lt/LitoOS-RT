@@ -18,6 +18,7 @@
  */
 typedef enum{
 	LT_ERR_COMPLETE  = 0, /*!< LT_ERR_COMPLETE */
+	LT_ERR_OK        = LT_ERR_COMPLETE, /*!< LT_ERR_OK */
 	LT_ERR_FAILED    = 1, /*!< LT_ERR_FAILED */
 	LT_ERR_NULL      = 2, /*!< LT_ERR_NULL */
 	LT_ERR_FULL      = 3, /*!< LT_ERR_FULL */

@@ -10,6 +10,7 @@
 
 #include "include/LitoOS.h"
 #include "include/list.h"
+#include "include/schedule.h"
 
 pid_t pid;
 
@@ -21,7 +22,7 @@ TCB_t* tcb_load;
 
 LT_error_code_t LT_ready_queue_init()
 {
-    ready_queue = LT_list_create();
+    ready_queue = LT_list_create(&insert_OK);
     if(NULL == ready_queue){
     	return LT_ERR_FAILED;
     }
@@ -85,7 +86,7 @@ LT_TCB_item_t* LT_task_create(Lito_task_t* task)
 
     tcb->pid = task->pid;
     tcb->status = RUNNING;
-    tcb->priority = 0;
+    tcb->priority = task->priority;
     tcb->function = task->function;
     tcb->stack_size = task->stack_size;
 

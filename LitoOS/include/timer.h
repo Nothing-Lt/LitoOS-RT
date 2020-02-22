@@ -33,9 +33,9 @@ typedef void handler_func();
  */
 typedef struct{
 	LT_TIMER_EVENT_FLAG flag;
-	uint32_t issue_at;   /*!< The handler will be executed now. */
-	handler_func* handler; /*!< The handler function will be executed. */
-	LT_semaphore_t* semaphore_queue; /*!< The semaphore queue */
+	uint32_t            issue_at;        /*!< The handler will be executed now. */
+	handler_func*       handler;         /*!< The handler function will be executed. */
+	LT_semaphore_t*     semaphore_queue; /*!< The semaphore queue */
 }LT_timer_event_t;
 
 /**

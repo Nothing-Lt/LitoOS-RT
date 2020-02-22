@@ -35,8 +35,8 @@ void LT_queue_init(LT_queue_t* queue,uint32_t queue_length,size_t ele_size,void*
     queue->read_from    = \
     queue->write_to     = queue_buffer;
 #if 1 == PERFORMANCE_IS_MORE_IMPORTANT
-    queue->tcb_pending_to_receive = LT_list_create();
-    queue->tcb_pending_to_send    = LT_list_create();
+    queue->tcb_pending_to_receive = LT_list_create(NULL);
+    queue->tcb_pending_to_send    = LT_list_create(NULL);
 #endif
 }
 

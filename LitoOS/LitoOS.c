@@ -21,11 +21,13 @@ void Lito_init()
 
 	LT_IRQ_disable();
 
+	LT_timer_init();
+
 	dummy_task.flag = 0;
 	dummy_task.function = &LT_dummy_task;
 	dummy_task.parameter = NULL;
 	dummy_task.pid = pid = 1;
-	dummy_task.stack_size = 256;
+	dummy_task.stack_size = 0x60;
 
 	lt_schedule_status = LT_SCHEDULE_NOT_RUNNING;
 
@@ -36,10 +38,7 @@ void Lito_init()
 
 void Lito_start()
 {
-
 	lt_schedule_status = LT_SCHEDULE_RUNNING;
-
-	LT_timer_init();
 
 	LT_IRQ_enable();
 
