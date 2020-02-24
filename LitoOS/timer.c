@@ -17,7 +17,7 @@
 
 LT_timer_event_list_t* timer_event_list;
 
-LT_error_code_t LT_timer_init()
+LT_error_code_t LT_timer_event_init()
 {
 	timer_event_list = LT_list_create(NULL);
 	if(NULL == timer_event_list){

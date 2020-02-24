@@ -51,7 +51,7 @@ typedef LT_list_item_t LT_timer_event_item_t;
 /**
  * @brief Initialize timer event list.
  */
-LT_error_code_t LT_timer_init();
+LT_error_code_t LT_timer_event_init();
 
 /**
  * @brief Register a timer event.

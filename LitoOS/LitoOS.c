@@ -21,8 +21,6 @@ void Lito_init()
 
 	LT_IRQ_disable();
 
-	LT_timer_init();
-
 	dummy_task.flag = 0;
 	dummy_task.function = &LT_dummy_task;
 	dummy_task.parameter = NULL;
@@ -31,6 +29,8 @@ void Lito_init()
 
 	lt_schedule_status = LT_SCHEDULE_NOT_RUNNING;
 
+	LT_timer_event_init();
+	
 	LT_ready_queue_init();
 
 	LT_task_create(&dummy_task);
