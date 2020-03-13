@@ -116,13 +116,12 @@ LT_TCB_item_t* LT_tcb_item_running_task_update()
 
 	updated_tcb_item = tcb_item_running_task;
 
+	tcb_save = &(((Lito_TCB_t*)(tcb_item_running_task->content))->tcb);
 	if(NULL == tcb_item_running_task->next){
-		tcb_save = &(((Lito_TCB_t*)(tcb_item_running_task->content))->tcb);
 		tcb_load = &(((Lito_TCB_t*)(ready_queue->head->content))->tcb);
 		tcb_item_running_task = ready_queue->head;
 	}
 	else{
-		tcb_save = &(((Lito_TCB_t*)(tcb_item_running_task->content))->tcb);
 		tcb_load = &(((Lito_TCB_t*)(tcb_item_running_task->next->content))->tcb);
 		tcb_item_running_task = tcb_item_running_task->next;
 	}

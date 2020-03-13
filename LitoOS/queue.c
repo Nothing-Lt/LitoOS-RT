@@ -237,7 +237,7 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         }
 
     	if(LT_QUEUE_AS_SEMAPHORE & flag){
-    		if(queue->queue_length > queue->ele_number){
+    		if(queue->queue_length > queue->ele_number){ // Queue is not full
     	    	queue->ele_number += 1;
 
     	    	if(0 != queue->tcb_pending_to_receive->length){
@@ -247,21 +247,24 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     	    	}
 
     	        result = LT_ERR_COMPLETE;
+				break;
     	    }
-    	    else{
-    	    	current_tcb_item = LT_tcb_item_running_task_update();
-    	    	// Add to pending list
-    			LT_list_remove(ready_queue,current_tcb_item);
-    			LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
-
-    	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){
-    					LT_IRQ_enable();
+    	    else{ // Queue is full
+    	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){ // From task, so self pending.
+    	    		current_tcb_item = LT_tcb_item_running_task_update();
+    	    		// Add to pending list
+    				LT_list_remove(ready_queue,current_tcb_item);
+    				LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
+    				LT_IRQ_enable();
+    				// context switch
+    	    		hardware_context_switch();
     			}
-    			// context switch
-    	    	hardware_context_switch();
-    	    }
+				else{ // From IRQ, stop here
+        	    	break;
+    	    	}
+			}
     	} // Normal resource
-    	else{
+    	else{ // Not full
     		if(queue->queue_length > queue->ele_number){
     			memcpy(queue->write_to,item,queue->ele_size);
 
@@ -280,17 +283,20 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     			result = LT_ERR_COMPLETE;
     			break;
     		}
-    		else{
-    			current_tcb_item = LT_tcb_item_running_task_update();
-    	    	// Add to pending list
-    			LT_list_remove(ready_queue,current_tcb_item);
-    			LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
-    	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){
-    					LT_IRQ_enable();
+    		else{ // Full
+    	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){ // From task, so self pending.
+        			current_tcb_item = LT_tcb_item_running_task_update();
+        	    	// Add to pending list
+        			LT_list_remove(ready_queue,current_tcb_item);
+        			LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
+    				LT_IRQ_enable();
+        			// context switch
+        	    	hardware_context_switch();
     			}
-    			// context switch
-    	    	hardware_context_switch();
-    		}
+    	    	else{ // From IRQ, so stop here.
+        	    	break;
+    	    	}
+			}
     	}
     }
 
@@ -335,17 +341,21 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     	    	}
 
     			result = LT_ERR_COMPLETE;
+				break;
     		}
     		else{
-    			current_tcb_item = LT_tcb_item_running_task_update();
-    	    	// Add to pending list
-    			LT_list_remove(ready_queue,current_tcb_item);
-    			LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
-    	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){
-    					LT_IRQ_enable();
+				if(LT_QUEUE_FLAG_FROM_TASK & flag){
+        			current_tcb_item = LT_tcb_item_running_task_update();
+        	    	// Add to pending list
+        			LT_list_remove(ready_queue,current_tcb_item);
+        			LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
+        			LT_IRQ_enable();
+        			// context switch
+        	    	hardware_context_switch();
     			}
-    			// context switch
-    	    	hardware_context_switch();
+    			else{
+    				break;
+    			}
     		}
     	}
     	else{
@@ -365,17 +375,23 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     			}
 
     			result = LT_ERR_COMPLETE;
+				break;
     		}
     		else{
-    			current_tcb_item = LT_tcb_item_running_task_update();
-    	    	// Add to pending list
-    			LT_list_remove(ready_queue,current_tcb_item);
-    			LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
-    	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){
-    					LT_IRQ_enable();
+    			if(LT_QUEUE_FLAG_FROM_TASK & flag){
+        			current_tcb_item = LT_tcb_item_running_task_update();
+        	    	// Add to pending list
+        			LT_list_remove(ready_queue,current_tcb_item);
+        			LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
+        	    	if(LT_QUEUE_FLAG_FROM_TASK & flag){
+        					LT_IRQ_enable();
+        			}
+        			// context switch
+        	    	hardware_context_switch();
     			}
-    			// context switch
-    	    	hardware_context_switch();
+    			else{
+    				break;
+    			}
     		}
     	}
     }
