@@ -15,9 +15,9 @@
  * @brief Definition of item in list.
  */
 typedef struct lt_list_item{
-	void* content;             /*!< Pointer pointing at the address of content */
-	struct lt_list_item* next; /*!< Point to the next item */
-	struct lt_list_item* prev; /*!< Point to the previous item */
+    void* content;             /*!< Pointer pointing at the address of content */
+    struct lt_list_item* next; /*!< Point to the next item */
+    struct lt_list_item* prev; /*!< Point to the previous item */
 }LT_list_item_t;
 
 /**
@@ -30,10 +30,10 @@ typedef LT_error_code_t insert_func(LT_list_item_t*, LT_list_item_t*);
  * @brief Definition of one list.
  */
 typedef struct{
-	uint32_t     length;  /*!< Current length of this list */
-	insert_func* insert_OK;
-	LT_list_item_t* head; /*!< Point to the first item in this list */
-	LT_list_item_t* end;  /*!< Point to the last item in this list */
+    uint32_t     length;  /*!< Current length of this list */
+    insert_func* insert_OK;
+    LT_list_item_t* head; /*!< Point to the first item in this list */
+    LT_list_item_t* end;  /*!< Point to the last item in this list */
 }LT_list_t;
 
 /**
