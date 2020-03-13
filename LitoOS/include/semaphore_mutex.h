@@ -15,8 +15,8 @@
  * @brief A set of constant variable to describe the state of a mutex
  */
 typedef enum{
-	LT_MUTEX_LOCKED = 0, /*!< LT_MUTEX_LOCKED, this mutex is locked */
-	LT_MUTEX_UNLOCKED = 1 /*!< LT_MUTEX_UNLOCKED this mutex is not locking*/
+    LT_MUTEX_LOCKED = 0, /*!< LT_MUTEX_LOCKED, this mutex is locked */
+    LT_MUTEX_UNLOCKED = 1 /*!< LT_MUTEX_UNLOCKED this mutex is not locking*/
 }LT_MUTEX_VALUE;
 
 /**

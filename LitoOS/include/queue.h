@@ -21,7 +21,7 @@ typedef enum{
     LT_QUEUE_FLAG_NO_WAIT = 2,  //!< LT_QUEUE_FLAG_NO_WAIT, Task will not wait for sending or receiving
     LT_QUEUE_FLAG_FROM_TASK = 4,//!< LT_QUEUE_FLAG_FROM_TASK, This request is from task.
     LT_QUEUE_FLAG_FROM_IRQ  = 8,//!< LT_QUEUE_FLAG_FROM_IRQ, This request is form IRQ
-	LT_QUEUE_AS_SEMAPHORE   = 16   //!< LT_QUEUE_AS_SEMAPHORE, This queue is for semaphore.
+    LT_QUEUE_AS_SEMAPHORE   = 16   //!< LT_QUEUE_AS_SEMAPHORE, This queue is for semaphore.
 }LT_QUEUE_FLAG;
 
 /**

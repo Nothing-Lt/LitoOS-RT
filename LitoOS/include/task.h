@@ -17,9 +17,9 @@
  * @brief Task status.
  */
 typedef enum{
-	RUNNING = 0x1,/*!< RUNNING */
-	READY   = 0x2,/*!< READY */
-	PENDING = 0x4,/*!< PENDING */
+    RUNNING = 0x1,/*!< RUNNING */
+    READY   = 0x2,/*!< READY */
+    PENDING = 0x4,/*!< PENDING */
 }Lito_TASK_STATUS;
 
 /**
