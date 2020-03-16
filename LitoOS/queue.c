@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 extern LT_TCB_list_t* ready_queue;
 
 /**
@@ -126,31 +125,21 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         LT_IRQ_disable();
     }
 
-    if(LT_QUEUE_AS_SEMAPHORE & flag){
-        if(queue->queue_length > queue->ele_number){
-            queue->ele_number += 1;
-
-            result = LT_ERR_COMPLETE;
-        }
-        else{
-            result = LT_ERR_FULL;
-        }
-    } // Normal resource
-    else{
-        if(queue->queue_length > queue->ele_number){
+    if(queue->queue_length > queue->ele_number){
+        if(!(LT_QUEUE_AS_SEMAPHORE & flag)){
             memcpy(queue->write_to,item,queue->ele_size);
 
             queue->write_to = (void*)(((uint32_t)(queue->write_to)) + queue->ele_size);
             if((uint32_t)queue->write_to >= ((uint32_t)(queue->queue_buffer) + (queue->queue_length * queue->ele_size))){
                 queue->write_to = queue->queue_buffer;
             }
-            queue->ele_number += 1;
+        }
+         queue->ele_number += 1;
 
-            result = LT_ERR_COMPLETE;
-        }
-        else{
-            result = LT_ERR_FULL;
-        }
+        result = LT_ERR_COMPLETE;
+    }
+    else{
+        result = LT_ERR_FULL;
     }
 
     if(LT_QUEUE_FLAG_FROM_TASK & flag){
@@ -179,31 +168,22 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         LT_IRQ_disable();
     }
 
-    if(LT_QUEUE_AS_SEMAPHORE & flag){
-        if(0 < queue->ele_number){
-            queue->ele_number -= 1;
-
-            result = LT_ERR_COMPLETE;
-        }
-        else{
-            result = LT_ERR_EMPTY;
-        }
-    }
-    else{
-        if(0 < queue->ele_number){
+    if(0 < queue->ele_number){
+        if(!(LT_QUEUE_AS_SEMAPHORE & flag)){
             memcpy(item,queue->read_from,queue->ele_size);
 
             queue->read_from = (void*)(((uint32_t)(queue->read_from)) + queue->ele_size);
             if((uint32_t)queue->read_from >= ((uint32_t)(queue->queue_buffer) + (queue->queue_length * queue->ele_size))){
                 queue->read_from = queue->queue_buffer;
             }
-            queue->ele_number -= 1;
+        }
 
-            result = LT_ERR_COMPLETE;
-        }
-        else{
-            result = LT_ERR_EMPTY;
-        }
+        queue->ele_number -= 1;
+
+        result = LT_ERR_COMPLETE;
+    }
+    else{
+        result = LT_ERR_EMPTY;
     }
 
     if(LT_QUEUE_FLAG_FROM_TASK & flag){
@@ -236,66 +216,38 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
             LT_IRQ_disable();
         }
 
-        if(LT_QUEUE_AS_SEMAPHORE & flag){
-            if(queue->queue_length > queue->ele_number){ // Queue is not full
-                queue->ele_number += 1;
-
-                if(0 != queue->tcb_pending_to_receive->length){
-                    pending_tcb_item = queue->tcb_pending_to_receive->head;
-                    LT_list_remove(queue->tcb_pending_to_receive,pending_tcb_item);
-                    LT_list_insert(ready_queue,pending_tcb_item);
-                }
-
-                result = LT_ERR_COMPLETE;
-                break;
-            }
-            else{ // Queue is full
-                if(LT_QUEUE_FLAG_FROM_TASK & flag){ // From task, so self pending.
-                    current_tcb_item = LT_tcb_item_running_task_update();
-                    // Add to pending list
-                    LT_list_remove(ready_queue,current_tcb_item);
-                    LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
-                    LT_IRQ_enable();
-                    // context switch
-                    hardware_context_switch();
-                }
-                else{ // From IRQ, stop here
-                    break;
-                }
-            }
-        } // Normal resource
-        else{ // Not full
-            if(queue->queue_length > queue->ele_number){
+        if(queue->queue_length > queue->ele_number){ // Queue is not full
+            if(!(LT_QUEUE_AS_SEMAPHORE & flag)){ // Not semaphore
                 memcpy(queue->write_to,item,queue->ele_size);
 
                 queue->write_to = (void*)(((uint32_t)(queue->write_to)) + queue->ele_size);
                 if((uint32_t)queue->write_to >= ((uint32_t)(queue->queue_buffer) + (queue->queue_length * queue->ele_size))){
                     queue->write_to = queue->queue_buffer;
                 }
-                queue->ele_number += 1;
-
-                if(0 != queue->tcb_pending_to_receive->length){
-                    pending_tcb_item = queue->tcb_pending_to_receive->head;
-                    LT_list_remove(queue->tcb_pending_to_receive,pending_tcb_item);
-                    LT_list_insert(ready_queue,pending_tcb_item);
-                }
-
-                result = LT_ERR_COMPLETE;
-                break;
             }
-            else{ // Full
-                if(LT_QUEUE_FLAG_FROM_TASK & flag){ // From task, so self pending.
-                    current_tcb_item = LT_tcb_item_running_task_update();
-                    // Add to pending list
-                    LT_list_remove(ready_queue,current_tcb_item);
-                    LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
-                    LT_IRQ_enable();
-                    // context switch
-                    hardware_context_switch();
-                }
-                else{ // From IRQ, so stop here.
-                    break;
-                }
+            queue->ele_number += 1;
+
+            if(0 != queue->tcb_pending_to_receive->length){
+                pending_tcb_item = queue->tcb_pending_to_receive->head;
+                LT_list_remove(queue->tcb_pending_to_receive,pending_tcb_item);
+                LT_list_insert(ready_queue,pending_tcb_item);
+            }
+
+            result = LT_ERR_COMPLETE;
+            break;
+        }
+        else{ // Queue is full
+            if(LT_QUEUE_FLAG_FROM_TASK & flag){ // From task, so self pending.
+                current_tcb_item = LT_tcb_item_running_task_update();
+                // Add to pending list
+                LT_list_remove(ready_queue,current_tcb_item);
+                LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
+                LT_IRQ_enable();
+                // context switch
+                hardware_context_switch();
+            }
+            else{ // From IRQ, stop here
+                break;
             }
         }
     }
@@ -330,68 +282,38 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
             LT_IRQ_disable();
         }
 
-        if(LT_QUEUE_AS_SEMAPHORE & flag){
-            if(0 < queue->ele_number){
-                queue->ele_number -= 1;
-
-                if(0 != queue->tcb_pending_to_send->length){
-                    pending_tcb_item = queue->tcb_pending_to_send->head;
-                    LT_list_remove(queue->tcb_pending_to_send,pending_tcb_item);
-                    LT_list_insert(ready_queue,pending_tcb_item);
-                }
-
-                result = LT_ERR_COMPLETE;
-                break;
-            }
-            else{
-                if(LT_QUEUE_FLAG_FROM_TASK & flag){
-                    current_tcb_item = LT_tcb_item_running_task_update();
-                    // Add to pending list
-                    LT_list_remove(ready_queue,current_tcb_item);
-                    LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
-                    LT_IRQ_enable();
-                    // context switch
-                    hardware_context_switch();
-                }
-                else{
-                    break;
-                }
-            }
-        }
-        else{
-            if(0 < queue->ele_number){
+        if(0 < queue->ele_number){
+            if(!(LT_QUEUE_AS_SEMAPHORE & flag)){
                 memcpy(item,queue->read_from,queue->ele_size);
 
                 queue->read_from = (void*)(((uint32_t)(queue->read_from)) + queue->ele_size);
                 if((uint32_t)queue->read_from >= ((uint32_t)(queue->queue_buffer) + (queue->queue_length * queue->ele_size))){
                     queue->read_from = queue->queue_buffer;
                 }
-                queue->ele_number -= 1;
+            }
+            queue->ele_number -= 1;
 
-                if(0 != queue->tcb_pending_to_send->length){
-                    pending_tcb_item = queue->tcb_pending_to_send->head;
-                    LT_list_remove(queue->tcb_pending_to_send,pending_tcb_item);
-                    LT_list_insert(ready_queue,pending_tcb_item);
-                }
+            if(0 != queue->tcb_pending_to_send->length){
+                pending_tcb_item = queue->tcb_pending_to_send->head;
+                LT_list_remove(queue->tcb_pending_to_send,pending_tcb_item);
+                LT_list_insert(ready_queue,pending_tcb_item);
+            }
 
-                result = LT_ERR_COMPLETE;
-                break;
+            result = LT_ERR_COMPLETE;
+            break;
+        }
+        else{
+            if(LT_QUEUE_FLAG_FROM_TASK & flag){
+                current_tcb_item = LT_tcb_item_running_task_update();
+                // Add to pending list
+                LT_list_remove(ready_queue,current_tcb_item);
+                LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
+                LT_IRQ_enable();
+                // context switch
+                hardware_context_switch();
             }
             else{
-                if(LT_QUEUE_FLAG_FROM_TASK & flag){
-                    current_tcb_item = LT_tcb_item_running_task_update();
-                    // Add to pending list
-                    LT_list_remove(ready_queue,current_tcb_item);
-                    LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
-                    if(LT_QUEUE_FLAG_FROM_TASK & flag){
-                            LT_IRQ_enable();
-                    }
-                    // context switch
-                    hardware_context_switch();
-                }
-                else{
-                    break;
-                }
+                break;
             }
         }
     }
