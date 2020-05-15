@@ -79,4 +79,27 @@ void LT_mutex_unlock(LT_mutex_t* mutex);
  */
 #define LT_semaphore_put(semaphore,flag) LT_queue_put(semaphore,NULL,flag|LT_QUEUE_AS_SEMAPHORE)
 
+/**
+ * @brief Get a semaphore.
+ * @param[in] semaphore a pointer,pointing at a semaphore variable.
+ * @param[in] flag LT_QUEUE_FLAG, if it is a task to take this semaphore, then flag=LT_QUEUE_FLAG_FROM_TASK.
+ *            if it is a IRQ to take this semaphore, then flag=LT_QUEUE_FLAG_FROM_IRQ.
+ * @retval LT_ERR_COMPLETE This operation is completed.
+ * @retval LT_ERR_PARAMETER This operation is failed because of parameter.
+ * @retval LT_ERR_EMPTY This operation is failed because of this semaphore is empty.
+ */
+#define LT_semaphore_get_from_ISR(semaphore,flag,ask_for_scheduling) LT_queue_get_from_ISR(semaphore,NULL,flag|LT_QUEUE_AS_SEMAPHORE,ask_for_scheduling)
+
+/**
+ * @brief Release a semaphore.
+ * @param[in] semaphore a pointer,pointing at a semaphore variable.
+ * @param[in] flag LT_QUEUE_FLAG, if it is a task to give this semaphore, then flag=LT_QUEUE_FLAG_FROM_TASK.
+ *            if it is a IRQ to give this semaphore, then flag=LT_QUEUE_FLAG_FROM_IRQ.
+ * @retval LT_ERR_COMPLETE This operation is completed.
+ * @retval LT_ERR_PARAMETER This operation is failed because of parameter.
+ * @retval LT_ERR_FULL This operation is failed because of this semaphore is full.
+ */
+#define LT_semaphore_put_from_ISR(semaphore,flag,ask_for_scheduling) LT_queue_put_from_ISR(semaphore,NULL,flag|LT_QUEUE_AS_SEMAPHORE,ask_for_scheduling)
+
+
 #endif /* INCLUDE_SEMAPHORE_MUTEX_H_ */

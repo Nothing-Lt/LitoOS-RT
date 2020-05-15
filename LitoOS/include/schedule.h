@@ -1,7 +1,7 @@
 /*
  * schedule.h
  *
- *  Created on: 2020��1��23��
+ *  Created on: 2020年1月23日
  *      Author: 78045
  */
 

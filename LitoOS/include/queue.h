@@ -62,14 +62,38 @@ LT_queue_t* LT_queue_create(uint32_t queue_length,size_t ele_size);
  * @param queue The pointer of this queue.
  * @param item The pointer of the item which will be put into this queue.
  * @param flag The queue flag.
+ * @param ask_for_scheduling The flag for asking for scheduling.
  * @retval LT_ERR_PARAMETER Wrong parameter is given.
  * @retval LT_ERR_COMPLETE It is success to put a new element into this queue.
  * @retval LT_ERR_FULL This queue is full, cannot put.
  */
-LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag);
+LT_error_code_t _queue_put(LT_queue_t* queue, void* item, LT_QUEUE_FLAG flag, LT_SCHEDULE_FLAG_t* ask_for_scheduling);
 
 /**
  * Get an element from this queue.
+ * @param queue The pointer of this queue.
+ * @param item The pointer of the item which receive from this queue.
+ * @param flag The queue flag.
+ * @param ask_for_scheduling The flag for asking for scheduling.
+ * @retval LT_ERR_PARAMETER Wrong parameter is given.
+ * @retval LT_ERR_COMPLETE It is success to put a new element into this queue.
+ * @retval LT_ERR_EMPTY This queue is full, cannot put.
+ */
+LT_error_code_t _queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling);
+
+/**
+ * Put a new element into this queue for task.
+ * @param queue The pointer of this queue.
+ * @param item The pointer of the item which will be put into this queue.
+ * @param flag The queue flag.
+ * @retval LT_ERR_PARAMETER Wrong parameter is given.
+ * @retval LT_ERR_COMPLETE It is success to put a new element into this queue.
+ * @retval LT_ERR_FULL This queue is full, cannot put.
+ */
+#define LT_queue_put(queue,item,flag) _queue_put(queue,item,flag,NULL)
+
+/**
+ * Get an element from this queue for task.
  * @param queue The pointer of this queue.
  * @param item The pointer of the item which receive from this queue.
  * @param flag The queue flag.
@@ -77,6 +101,18 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag);
  * @retval LT_ERR_COMPLETE It is success to put a new element into this queue.
  * @retval LT_ERR_EMPTY This queue is full, cannot put.
  */
-LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag);
+#define LT_queue_get(queue,item,flag) _queue_get(queue,item,flag,NULL)
+
+/**
+ * Put a new element into this queue for task.
+ *
+ *
+ */
+#define LT_queue_put_from_ISR(queue,item,flag,ask_for_scheduling) _queue_put(queue,item,flag|LT_QUEUE_FLAG_FROM_IRQ,ask_for_scheduling)
+
+/**
+ * Get an element from this queue for task.
+ */
+#define LT_queue_get_from_ISR(queue,item,flag,ask_for_scheduling) _queue_get(queue,item,flag|LT_QUEUE_FLAG_FROM_IRQ,ask_for_scheduling)
 
 #endif /* INCLUDE_QUEUE_H_ */

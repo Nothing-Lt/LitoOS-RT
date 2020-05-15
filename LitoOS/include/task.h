@@ -22,6 +22,11 @@ typedef enum{
     PENDING = 0x4,/*!< PENDING */
 }Lito_TASK_STATUS;
 
+typedef enum{
+    NO_SCHEDULING = 1,
+    ASK_FOR_SCHEDULING = 2
+}LT_SCHEDULE_FLAG_t;
+
 /**
  * @brief Definition of task function.
  * @param param Parameter for this function.
@@ -109,7 +114,7 @@ void LT_task_switch();
  * @brief Update the current running tcb.
  * @return The tcb_item before update.
  */
-LT_TCB_item_t* LT_tcb_item_running_task_update();
+void LT_tcb_item_running_task_update();
 
 /**
  * @brief Get my TCB.

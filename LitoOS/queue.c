@@ -13,6 +13,7 @@
 #include <string.h>
 
 extern LT_TCB_list_t* ready_queue;
+extern LT_TCB_item_t* tcb_item_running_task;
 
 /**
  * Initialize a queue
@@ -106,7 +107,7 @@ LT_queue_t* LT_queue_create(uint32_t queue_length,size_t ele_size)
  *      return NULL;
  *  }
  */
-LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
+LT_error_code_t _queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
     LT_error_code_t result = LT_ERR_FULL;
 
@@ -145,11 +146,15 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     if(LT_QUEUE_FLAG_FROM_TASK & flag){
         LT_IRQ_enable();
     }
+    else if(LT_QUEUE_FLAG_FROM_IRQ & flag)
+        if((NULL != ask_for_scheduling) && (LT_ERR_COMPLETE == result)){
+        *ask_for_scheduling = ASK_FOR_SCHEDULING;
+    }
 
     return result;
 }
 
-LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
+LT_error_code_t _queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
     LT_error_code_t result = LT_ERR_EMPTY;
 
@@ -189,14 +194,17 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     if(LT_QUEUE_FLAG_FROM_TASK & flag){
         LT_IRQ_enable();
     }
+    else if(LT_QUEUE_FLAG_FROM_IRQ & flag)
+        if((NULL != ask_for_scheduling) && (LT_ERR_COMPLETE == result)){
+        *ask_for_scheduling = ASK_FOR_SCHEDULING;
+    }
 
     return result;
 }
 #elif 1 == PERFORMANCE_IS_MORE_IMPORTANT
 
-LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
+LT_error_code_t _queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
-    LT_TCB_item_t* current_tcb_item = NULL;
     LT_TCB_item_t* pending_tcb_item = NULL;
     LT_error_code_t result = LT_ERR_FULL;
 
@@ -217,6 +225,7 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         }
 
         if(queue->queue_length > queue->ele_number){ // Queue is not full
+
             if(!(LT_QUEUE_AS_SEMAPHORE & flag)){ // Not semaphore
                 memcpy(queue->write_to,item,queue->ele_size);
 
@@ -228,9 +237,17 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
             queue->ele_number += 1;
 
             if(0 != queue->tcb_pending_to_receive->length){
-                pending_tcb_item = queue->tcb_pending_to_receive->head;
-                LT_list_remove(queue->tcb_pending_to_receive,pending_tcb_item);
-                LT_list_insert(ready_queue,pending_tcb_item);
+                // put all of the pending task into ready queue,
+                // for making sure that the task with highest priority will get this resource.
+                do{
+                    pending_tcb_item = queue->tcb_pending_to_receive->head;
+                    LT_list_remove(queue->tcb_pending_to_receive,pending_tcb_item);
+                    LT_list_insert(ready_queue,pending_tcb_item);
+                }while(0 < queue->tcb_pending_to_receive->length);
+
+                if((LT_QUEUE_FLAG_FROM_IRQ & flag) && (NULL != ask_for_scheduling)){
+                    *ask_for_scheduling = ASK_FOR_SCHEDULING;
+                }
             }
 
             result = LT_ERR_COMPLETE;
@@ -238,10 +255,10 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         }
         else{ // Queue is full
             if(LT_QUEUE_FLAG_FROM_TASK & flag){ // From task, so self pending.
-                current_tcb_item = LT_tcb_item_running_task_update();
                 // Add to pending list
-                LT_list_remove(ready_queue,current_tcb_item);
-                LT_list_insert(queue->tcb_pending_to_send,current_tcb_item);
+                LT_list_remove(ready_queue,tcb_item_running_task);
+                LT_list_insert(queue->tcb_pending_to_send,tcb_item_running_task);
+                //LT_tcb_item_running_task_update();
                 LT_IRQ_enable();
                 // context switch
                 hardware_context_switch();
@@ -252,7 +269,6 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         }
     }
 
-
     if(LT_QUEUE_FLAG_FROM_TASK & flag){
         LT_IRQ_enable();
     }
@@ -260,9 +276,8 @@ LT_error_code_t LT_queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
     return result;
 }
 
-LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
+LT_error_code_t _queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
-    LT_TCB_item_t* current_tcb_item = NULL;
     LT_TCB_item_t* pending_tcb_item = NULL;
     LT_error_code_t result = LT_ERR_EMPTY;
 
@@ -283,6 +298,7 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         }
 
         if(0 < queue->ele_number){
+
             if(!(LT_QUEUE_AS_SEMAPHORE & flag)){
                 memcpy(item,queue->read_from,queue->ele_size);
 
@@ -293,10 +309,19 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
             }
             queue->ele_number -= 1;
 
+            // some task pending for this resource.
             if(0 != queue->tcb_pending_to_send->length){
-                pending_tcb_item = queue->tcb_pending_to_send->head;
-                LT_list_remove(queue->tcb_pending_to_send,pending_tcb_item);
-                LT_list_insert(ready_queue,pending_tcb_item);
+                // put all of the pending task into ready queue,
+                // for making sure that the task with highest priority will get this resource.
+                do{
+                    pending_tcb_item = queue->tcb_pending_to_send->head;
+                    LT_list_remove(queue->tcb_pending_to_send,pending_tcb_item);
+                    LT_list_insert(ready_queue,pending_tcb_item);
+                }while(0 < queue->tcb_pending_to_send->length);
+
+                if((LT_QUEUE_FLAG_FROM_IRQ & flag) && (NULL != ask_for_scheduling)){
+                    *ask_for_scheduling = ASK_FOR_SCHEDULING;
+                }
             }
 
             result = LT_ERR_COMPLETE;
@@ -304,10 +329,10 @@ LT_error_code_t LT_queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag)
         }
         else{
             if(LT_QUEUE_FLAG_FROM_TASK & flag){
-                current_tcb_item = LT_tcb_item_running_task_update();
                 // Add to pending list
-                LT_list_remove(ready_queue,current_tcb_item);
-                LT_list_insert(queue->tcb_pending_to_receive,current_tcb_item);
+                LT_list_remove(ready_queue,tcb_item_running_task);
+                LT_list_insert(queue->tcb_pending_to_receive,tcb_item_running_task);
+                //LT_tcb_item_running_task_update();
                 LT_IRQ_enable();
                 // context switch
                 hardware_context_switch();
