@@ -1,4 +1,4 @@
-list.c:31:17:LT_list_init	0	static
 list.c:14:12:LT_list_create	8	static
-list.c:44:17:LT_list_insert	0	static
-list.c:63:17:LT_list_remove	8	static
+list.c:31:17:LT_list_init	0	static
+list.c:45:17:LT_list_insert	16	static
+list.c:94:17:LT_list_remove	8	static

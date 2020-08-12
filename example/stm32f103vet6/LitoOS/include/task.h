@@ -19,10 +19,15 @@
  * @brief Task status.
  */
 typedef enum{
-	RUNNING = 0x1,/*!< RUNNING */
-	READY   = 0x2,/*!< READY */
-	PENDING = 0x4,/*!< PENDING */
+    RUNNING = 0x1,/*!< RUNNING */
+    READY   = 0x2,/*!< READY */
+    PENDING = 0x4,/*!< PENDING */
 }Lito_TASK_STATUS;
+
+typedef enum{
+    NO_SCHEDULING = 1,
+    ASK_FOR_SCHEDULING = 2
+}LT_SCHEDULE_FLAG_t;
 
 /**
  * @brief Definition of task function.
@@ -37,6 +42,7 @@ typedef struct Lito_task_t
 {
     pid_t      pid;
     uint32_t   flag;      // This task is periodic or aperiodic
+    uint32_t   priority;
     size_t     stack_size;
     void*      parameter;
     task_func* function;  // Entry point of this task
@@ -110,7 +116,7 @@ void LT_task_switch();
  * @brief Update the current running tcb.
  * @return The tcb_item before update.
  */
-LT_TCB_item_t* LT_tcb_item_running_task_update();
+void LT_tcb_item_running_task_update();
 
 /**
  * @brief Get my TCB.

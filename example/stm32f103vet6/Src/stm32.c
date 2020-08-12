@@ -26,72 +26,73 @@ void hardware_init()
   MX_GPIO_Init();
   MX_USART1_UART_Init();
 }
-
 uint32_t hardware_tick_get()
 {
-	return HAL_GetTick();
+    return HAL_GetTick();
 }
 
 void lr_temp()
 {
-	while(1){
+    while(1){
 
-	}
+    }
 }
 
 void hardware_context_switch()
 {
-	*((uint32_t*)0xE000ED04) = 0x10000000;
+    *((uint32_t*)0xE000ED04) = 0x10000000;
+    __asm volatile(
+            "dsb \n"\
+            "isb \n"\
+    );
 }
 
 void hardware_TCB_init(TCB_t* tcb,function* func,void* parameter,void* stack_pointer,size_t stack_size)
 {
-	CONTENT_t* tcb_in_stack = NULL;
+    CONTENT_t* tcb_in_stack = NULL;
 
-	if((NULL == tcb) || (NULL == func) || (NULL == stack_pointer)){
-		return;
-	}
+    if((NULL == tcb) || (NULL == func) || (NULL == stack_pointer)){
+        return;
+    }
 
-	tcb_in_stack = tcb->stack_pointer = (CONTENT_t*)(((uint32_t)stack_pointer) + stack_size - sizeof(TCB_t) - sizeof(CONTENT_t));
+    tcb_in_stack = tcb->stack_pointer = (CONTENT_t*)(((uint32_t)stack_pointer) + stack_size - sizeof(CONTENT_t));
 
-	// in the future, this can be the return address.
-	tcb_in_stack->lr = (uint32_t)lr_temp;
-	tcb_in_stack->pc = ((uint32_t)func) & 0xfffffffe;
+    // in the future, this can be the return address.
+    tcb_in_stack->lr = (uint32_t)lr_temp;
+    tcb_in_stack->pc = ((uint32_t)func) & 0xfffffffe;
 
-	// in the future, this can be the parameter.
-	tcb_in_stack->r0 = (uint32_t)parameter;
+    // in the future, this can be the parameter.
+    tcb_in_stack->r0 = (uint32_t)parameter;
 
-	tcb_in_stack->r1  = tcb_in_stack->r2  = tcb_in_stack->r3  = \
-	tcb_in_stack->r4  = tcb_in_stack->r5  = tcb_in_stack->r6  = \
-	tcb_in_stack->r7  = tcb_in_stack->r8  = tcb_in_stack->r9  = \
-	tcb_in_stack->r10 = tcb_in_stack->r11 = tcb_in_stack->r12 = 0;
+    tcb_in_stack->r1  = tcb_in_stack->r2  = tcb_in_stack->r3  = \
+    tcb_in_stack->r4  = tcb_in_stack->r5  = tcb_in_stack->r6  = \
+    tcb_in_stack->r7  = tcb_in_stack->r8  = tcb_in_stack->r9  = \
+    tcb_in_stack->r10 = tcb_in_stack->r11 = tcb_in_stack->r12 = 0;
 
-	tcb_in_stack->xPSR = 0x1000000;
+    tcb_in_stack->xPSR = 0x1000000;
 }
 
 void LT_IRQ_enable()
 {
-	__asm volatile
-	(
-		"	mov r0, #0		\n" \
-		"	msr basepri, r0	\n" \
-		"	isb				\n" \
-		"	dsb				\n" \
-	);
-
+    __asm volatile
+    (
+        "   mov r0, #0      \n" \
+        "   msr basepri, r0 \n" \
+        "   dsb             \n" \
+        "   isb             \n" \
+    );
 }
 
 void LT_IRQ_disable()
 {
-	__asm volatile
-	(
-		"	mov r0, #80		\n" \
-		"	msr basepri, r0	\n" \
-		"	isb				\n" \
-		"	dsb				\n" \
-	);
+    __asm volatile
+    (
+        "   mov r0, #80     \n" \
+        "   msr basepri, r0 \n" \
+        "   dsb             \n" \
+        "   isb             \n" \
+    );
 }
-
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -188,22 +189,19 @@ void LT_dummy_task(const void* arg)
 /*The function to start the first task(dummy task)*/
 void LT_first_task_start()
 {
-	tcb_load = &(((Lito_TCB_t*)(tcb_item_running_task->content))->tcb);
-
-	__asm volatile(
-			" ldr r0, =0xE000ED08 	\n" /* Use the NVIC offset register to locate the stack. */
-			" ldr r0, [r0] 			\n"
-			" ldr r0, [r0] 			\n"
-			" msr msp, r0			\n" /* Set the msp back to the start of the stack. */
-			" cpsie i				\n" /* Globally enable interrupts. */
-			" cpsie f				\n"
-			" dsb					\n"
-			" isb					\n"
-			" svc 0					\n" /* System call to start first task. */
-			" nop					\n"
-	);
+    __asm volatile(
+            " ldr r0, =0xE000ED08   \n" /* Use the NVIC offset register to locate the stack. */
+            " ldr r0, [r0]          \n"
+            " ldr r0, [r0]          \n"
+            " msr msp, r0           \n" /* Set the msp back to the start of the stack. */
+            " cpsie i               \n" /* Globally enable interrupts. */
+            " cpsie f               \n"
+            " dsb                   \n"
+            " isb                   \n"
+            " svc 0                 \n" /* System call to start first task. */
+            " nop                   \n"
+    );
 }
-
 
 
 /**

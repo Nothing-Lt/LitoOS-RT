@@ -3,7 +3,7 @@ stm32f1xx_it.c:52:6:HardFault_Handler	0	static
 stm32f1xx_it.c:63:6:MemManage_Handler	0	static
 stm32f1xx_it.c:75:6:BusFault_Handler	0	static
 stm32f1xx_it.c:87:6:UsageFault_Handler	0	static
-stm32f1xx_it.c:99:6:SVC_Handler	0	static
+stm32f1xx_it.c:99:29:SVC_Handler	0	static
 stm32f1xx_it.c:119:6:DebugMon_Handler	0	static
 stm32f1xx_it.c:127:29:PendSV_Handler	0	static
-stm32f1xx_it.c:145:6:SysTick_Handler	24	static
+stm32f1xx_it.c:152:6:SysTick_Handler	32	static

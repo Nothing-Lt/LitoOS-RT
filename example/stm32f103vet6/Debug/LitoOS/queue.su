@@ -1,4 +1,4 @@
-queue.c:22:6:LT_queue_init	8	static
-queue.c:44:13:LT_queue_create	16	static
-queue.c:218:17:LT_queue_put	32	static
-queue.c:306:17:LT_queue_get	32	static
+queue.c:23:6:LT_queue_init	16	static
+queue.c:45:13:LT_queue_create	16	static
+queue.c:208:17:_queue_put	40	static
+queue.c:282:17:_queue_get	40	static

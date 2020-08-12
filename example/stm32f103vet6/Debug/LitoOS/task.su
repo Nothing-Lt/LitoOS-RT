@@ -1,7 +1,7 @@
 task.c:24:17:LT_ready_queue_init	8	static
 task.c:34:17:LT_ready_queue_insert	0	static
-task.c:49:17:LT_ready_queue_remove	0	static
-task.c:67:16:LT_task_create	32	static
-task.c:114:16:LT_tcb_item_running_task_update	12	static
-task.c:108:6:LT_task_switch	8	static
-task.c:141:16:LT_TCB_get	0	static
+task.c:43:17:LT_ready_queue_remove	0	static
+task.c:61:16:LT_task_create	32	static
+task.c:102:6:LT_task_switch	0	static
+task.c:107:6:LT_tcb_item_running_task_update	0	static
+task.c:120:16:LT_TCB_get	0	static

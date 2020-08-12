@@ -19,8 +19,8 @@
 #include "semaphore_mutex.h"
 
 typedef enum{
-	LT_TIMER_EVENT_FUNCTION = 1,
-	LT_TIMER_EVENT_SEMAPHORE = 2
+    LT_TIMER_EVENT_FUNCTION = 1,
+    LT_TIMER_EVENT_SEMAPHORE = 2
 }LT_TIMER_EVENT_FLAG;
 
 /**
@@ -32,10 +32,10 @@ typedef void handler_func();
  * @brief Definition of timer structure.
  */
 typedef struct{
-	LT_TIMER_EVENT_FLAG flag;
-	uint32_t issue_at;   /*!< The handler will be executed now. */
-	handler_func* handler; /*!< The handler function will be executed. */
-	LT_semaphore_t* semaphore_queue; /*!< The semaphore queue */
+    LT_TIMER_EVENT_FLAG flag;
+    uint32_t            issue_at;        /*!< The handler will be executed now. */
+    handler_func*       handler;         /*!< The handler function will be executed. */
+    LT_semaphore_t*     semaphore_queue; /*!< The semaphore queue */
 }LT_timer_event_t;
 
 /**
@@ -51,7 +51,7 @@ typedef LT_list_item_t LT_timer_event_item_t;
 /**
  * @brief Initialize timer event list.
  */
-LT_error_code_t LT_timer_init();
+LT_error_code_t LT_timer_event_init();
 
 /**
  * @brief Register a timer event.
