@@ -31,9 +31,9 @@
 
 #include "../Inc/stm32.h"
 
-extern TCB_t* tcb_save;
-extern TCB_t* tcb_load;
+extern TCB_t* tcb_running;
 extern LT_timer_event_list_t* timer_event_list;
+extern LT_SCHEDULE_STATUS lt_schedule_status;
 
 /******************************************************************************/
 /*           Cortex-M3 Processor Interruption and Exception Handlers          */ 
@@ -96,13 +96,13 @@ void UsageFault_Handler(void)
 /**
   * @brief This function handles System service call via SWI instruction.
   */
-void SVC_Handler(void)
+void __attribute__((naked)) SVC_Handler(void)
 {
-	void* stack_load = (void*)(&(tcb_load->stack_pointer));
 
 	__asm volatile(
-			"	mov r0, %0					    \n" /* The first item in pxCurrentTCB is the task top of stack. */
+			"	mov r0, %[stack_top]			\n" /* The first item in pxCurrentTCB is the task top of stack. */
 			"   ldr r0,[r0]                     \n"
+	                "   ldr r0,[r0]                     \n"
 			"	ldmia r0!, {r4-r11}				\n" /* Pop the registers that are not automatically saved on exception entry and the critical nesting count. */
 			"	msr psp, r0						\n" /* Restore the task stack pointer. */
 			"	isb								\n"
@@ -110,7 +110,7 @@ void SVC_Handler(void)
 			"	msr	basepri, r0					\n"
 			"	orr r14, #0xd					\n"
 			"	bx r14							\n"
-			:"=r"(stack_load));
+			::[stack_top]"r"(&tcb_running):);
 }
 
 /**
@@ -126,17 +126,24 @@ void DebugMon_Handler(void)
   */
 void __attribute__((naked)) PendSV_Handler(void)
 {
-	__asm volatile(
-		"mrs r0, psp				 \n"
-		"isb						 \n"
-		"stmdb r0!, {r4-r11}		 \n" /* Save the remaining registers. */
-		"str   r0, [r3]				 \n" /* Save the new top of stack into the first member of the TCB. */
-		"ldr   r0,[r2]               \n"
-		"ldmia r0!, {r4-r11}		 \n" /* Pop the registers. */
-		"msr psp, r0				 \n"
-		"isb						 \n"
-		"bx r14						 \n"
-		::[stack1]"r"(tcb_save),[stack2]"r"(tcb_load));
+    __asm volatile(
+            "mov   r3, %[stack_save]            \n"
+            "ldr   r2,[r3]                      \n"
+            "mrs   r0, psp                      \n"
+            "isb                                \n"
+            "stmdb r0!, {r4-r11}                \n" // Save the remaining registers.
+            "str   r0, [r2]                     \n" // Save the new top of stack into the first member of the TCB.
+            "stmdb sp!,{r3,r14}                 \n"
+            "bl LT_tcb_item_running_task_update \n"
+            "ldmia sp!,{r3,r14}                 \n"
+            "ldr   r2, [r3]                     \n"
+            "ldr   r0, [r2]                     \n"
+            "ldmia r0!, {r4-r11}                \n" // Pop the registers.
+            "msr psp, r0                        \n"
+            "isb                                \n"
+            "bx r14                             \n"
+            ::[stack_save]"r"(&tcb_running)
+    );
 }
 
 /**
@@ -145,6 +152,8 @@ void __attribute__((naked)) PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 	uint32_t current_tick = 0;
+	LT_SCHEDULE_FLAG_t ask_for_scheduling = NO_SCHEDULING;
+	LT_SCHEDULE_FLAG_t will_schedule = NO_SCHEDULING;
 	LT_timer_event_t* timer_event = NULL;
 	LT_timer_event_item_t* timer_event_item = NULL;
 	LT_timer_event_item_t* timer_event_item_free = NULL;
@@ -162,7 +171,8 @@ void SysTick_Handler(void)
 					(timer_event->handler)();
 				}
 				else if(LT_TIMER_EVENT_SEMAPHORE & timer_event->flag){
-					LT_semaphore_put(timer_event->semaphore_queue,LT_QUEUE_FLAG_FROM_IRQ);
+					LT_semaphore_put_from_ISR(timer_event->semaphore_queue,LT_QUEUE_FLAG_FROM_IRQ,&ask_for_scheduling);
+					will_schedule |= ask_for_scheduling;
 				}
 
 				// This event already been issued, so remove it from timer event list.
@@ -178,7 +188,12 @@ void SysTick_Handler(void)
 		}
 	}
 
-	if(0 == (current_tick % 500)){
+	// The scheduling is not started yet
+    if(LT_SCHEDULE_RUNNING != lt_schedule_status){
+        return;
+    }
+
+	if(ASK_FOR_SCHEDULING & will_schedule){
 		LT_task_switch();
 	}
 }

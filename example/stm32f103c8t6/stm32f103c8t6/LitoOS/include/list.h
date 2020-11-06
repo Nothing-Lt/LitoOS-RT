@@ -21,28 +21,37 @@ typedef struct lt_list_item{
 }LT_list_item_t;
 
 /**
+ * @brief Definition for insertion function. This function is for telling it is okay to insert
+ * current item to this position.
+ */
+typedef LT_error_code_t insert_func(LT_list_item_t*, LT_list_item_t*);
+
+/**
  * @brief Definition of one list.
  */
 typedef struct{
-	uint32_t length;      /*!< Current length of this list */
+	uint32_t     length;  /*!< Current length of this list */
+	insert_func* insert_OK;
 	LT_list_item_t* head; /*!< Point to the first item in this list */
 	LT_list_item_t* end;  /*!< Point to the last item in this list */
 }LT_list_t;
 
 /**
  * @brief Create a list.
+ * @param[in] insert_OK The function to decide the new item is okay to insert at this position.
  * @return The address of created list, if it is NULL, this means failed to create a list.
  *         The reason why this happen is because of failed of malloc function.
  */
-LT_list_t* LT_list_create();
+LT_list_t* LT_list_create(insert_func* insert_OK);
 
 /**
  * @brief Initialize a list.
- * @param list The address of a LT_list_t variable.
+ * @param[in] list The address of a LT_list_t variable.
+ * @param[in] insert_OK The function to decide the new item is okay to insert at this position.
  * @retval LT_ERR_COMPLETE Initialization operation is completed.
  * @retval LT_ERR_PARAMETER Error with the parameter, list is NULL?
  */
-LT_error_code_t LT_list_init(LT_list_t* list);
+LT_error_code_t LT_list_init(LT_list_t* list,insert_func* insert_OK);
 
 /**
  * @brief Insert one item into list.

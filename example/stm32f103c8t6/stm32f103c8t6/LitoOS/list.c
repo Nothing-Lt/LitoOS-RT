@@ -11,7 +11,7 @@
 
 #include "include/LitoOS.h"
 
-LT_list_t* LT_list_create()
+LT_list_t* LT_list_create(insert_func* insert_OK)
 {
 	LT_list_t* new_list = NULL;
 
@@ -20,7 +20,7 @@ LT_list_t* LT_list_create()
 		return NULL;
 	}
 
-	if(LT_ERR_COMPLETE!= LT_list_init(new_list)){
+	if(LT_ERR_COMPLETE!= LT_list_init(new_list,insert_OK)){
 		free(new_list);
 		return NULL;
 	}
@@ -28,13 +28,14 @@ LT_list_t* LT_list_create()
 	return new_list;
 }
 
-LT_error_code_t LT_list_init(LT_list_t* list)
+LT_error_code_t LT_list_init(LT_list_t* list,insert_func* insert_OK)
 {
 	if(NULL == list){
 		return LT_ERR_PARAMETER;
 	}
 
 	list->length = 0;
+	list->insert_OK = insert_OK;
 	list->head = list->end = NULL;
 
 	return LT_ERR_COMPLETE;
@@ -43,6 +44,8 @@ LT_error_code_t LT_list_init(LT_list_t* list)
 
 LT_error_code_t LT_list_insert(LT_list_t* list,LT_list_item_t* item)
 {
+	LT_list_item_t* item_in_list = NULL;
+
 	if((NULL == list) || (NULL == item)){
 		return LT_ERR_PARAMETER;
 	}
@@ -51,9 +54,37 @@ LT_error_code_t LT_list_insert(LT_list_t* list,LT_list_item_t* item)
 		list->head = list->end = item;
 	}
 	else{
-		item->prev = list->end;
-		list->end->next = item;
-		list->end = item;
+		if(NULL == list->insert_OK){
+			item->prev = list->end;
+			list->end->next = item;
+			list->end = item;
+		}
+		else{
+			for(item_in_list = list->head ; item_in_list ; item_in_list = item_in_list->next){
+				if(LT_ERR_OK == (list->insert_OK)(item_in_list,item)){
+					break;
+				}
+			}
+
+			if(NULL == item_in_list){ // The last position.
+				item->prev = list->end;
+				list->end->next = item;
+				list->end = item;
+			}
+			else if(list->head == item_in_list){ // The first position.
+				item->next = item_in_list;
+				item_in_list->prev = item;
+				list->head = item;
+			}
+			else{ // In the middle position.
+				item->next = item_in_list;
+				item->prev = item_in_list->prev;
+				if(NULL != item_in_list->prev){
+					item_in_list->prev->next = item;
+				}
+				item_in_list->prev = item;
+			}
+		}
 	}
 	(list->length)++;
 

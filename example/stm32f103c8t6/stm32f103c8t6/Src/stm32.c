@@ -8,8 +8,7 @@ UART_HandleTypeDef huart1;
 
 extern LT_list_t* ready_queue;
 extern LT_list_item_t* tcb_item_running_task;
-TCB_t* tcb_save;
-TCB_t* tcb_load;
+
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -42,6 +41,10 @@ void lr_temp()
 void hardware_context_switch()
 {
 	*((uint32_t*)0xE000ED04) = 0x10000000;
+	__asm volatile(
+	        "dsb \n"\
+	        "isb \n"\
+	);
 }
 
 void hardware_TCB_init(TCB_t* tcb,function* func,void* parameter,void* stack_pointer,size_t stack_size)
@@ -52,7 +55,7 @@ void hardware_TCB_init(TCB_t* tcb,function* func,void* parameter,void* stack_poi
 		return;
 	}
 
-	tcb_in_stack = tcb->stack_pointer = (CONTENT_t*)(((uint32_t)stack_pointer) + stack_size - sizeof(TCB_t) - sizeof(CONTENT_t));
+	tcb_in_stack = tcb->stack_pointer = (CONTENT_t*)(((uint32_t)stack_pointer) + stack_size - sizeof(CONTENT_t));
 
 	// in the future, this can be the return address.
 	tcb_in_stack->lr = (uint32_t)lr_temp;
@@ -196,8 +199,6 @@ void LT_dummy_task(const void* arg)
 /*The function to start the first task(dummy task)*/
 void LT_first_task_start()
 {
-	tcb_load = &(((Lito_TCB_t*)(tcb_item_running_task->content))->tcb);
-
 	__asm volatile(
 			" ldr r0, =0xE000ED08 	\n" /* Use the NVIC offset register to locate the stack. */
 			" ldr r0, [r0] 			\n"
