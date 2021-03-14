@@ -1,5 +1,5 @@
 # LitoOS-RT
-Real-time version LiToOS
+A little and simple Real-time OS
 
 LitoOS: 
 Source code for OS
