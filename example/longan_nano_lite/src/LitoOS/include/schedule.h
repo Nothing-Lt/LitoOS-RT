@@ -11,7 +11,7 @@
 #include "LitoOS.h"
 #include "list.h"
 
-LT_error_code_t insert_OK(LT_list_item_t*,LT_list_item_t*);
+LT_error_code_t insert_OK(LT_list_item_t volatile * item_in_list, LT_list_item_t volatile* item);
 
 
 #endif /* INCLUDE_SCHEDULE_H_ */

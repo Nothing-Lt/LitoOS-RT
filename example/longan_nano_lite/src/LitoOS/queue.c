@@ -14,8 +14,8 @@
 
 #include "../RISCV/longan_nano.h"
 
-extern LT_TCB_list_t* ready_queue;
-extern LT_TCB_item_t* tcb_item_running_task;
+extern volatile LT_TCB_list_t* ready_queue;
+extern LT_TCB_item_t volatile * tcb_item_running_task;
 
 /**
  * Initialize a queue
@@ -109,7 +109,7 @@ LT_queue_t* LT_queue_create(uint32_t queue_length,size_t ele_size)
  *      return NULL;
  *  }
  */
-LT_error_code_t _queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
+LT_error_code_t _queue_put(volatile LT_queue_t* queue, void volatile * item, LT_QUEUE_FLAG flag, LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
 	LT_error_code_t result = LT_ERR_FULL;
 
@@ -156,7 +156,7 @@ LT_error_code_t _queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SC
     return result;
 }
 
-LT_error_code_t _queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
+LT_error_code_t _queue_get(volatile LT_queue_t* queue,void volatile * item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
 	LT_error_code_t result = LT_ERR_EMPTY;
 
@@ -205,7 +205,7 @@ LT_error_code_t _queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SC
 }
 #elif 1 == PERFORMANCE_IS_MORE_IMPORTANT
 
-LT_error_code_t _queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
+LT_error_code_t _queue_put(volatile LT_queue_t* queue, void volatile * item, LT_QUEUE_FLAG flag, LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
 	LT_TCB_item_t* pending_tcb_item = NULL;
 	LT_error_code_t result = LT_ERR_FULL;
@@ -279,7 +279,7 @@ LT_error_code_t _queue_put(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SC
     return result;
 }
 
-LT_error_code_t _queue_get(LT_queue_t* queue,void* item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
+LT_error_code_t _queue_get(volatile LT_queue_t* queue,void volatile * item,LT_QUEUE_FLAG flag,LT_SCHEDULE_FLAG_t* ask_for_scheduling)
 {
 	LT_TCB_item_t* pending_tcb_item = NULL;
 	LT_error_code_t result = LT_ERR_EMPTY;

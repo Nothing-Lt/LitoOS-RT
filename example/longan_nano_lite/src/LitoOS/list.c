@@ -42,7 +42,7 @@ LT_error_code_t LT_list_init(LT_list_t* list,insert_func* insert_OK)
 }
 
 
-LT_error_code_t LT_list_insert(LT_list_t* list,LT_list_item_t* item)
+LT_error_code_t LT_list_insert(volatile LT_list_t* list,LT_list_item_t volatile * item)
 {
 	LT_list_item_t* item_in_list = NULL;
 
@@ -91,7 +91,7 @@ LT_error_code_t LT_list_insert(LT_list_t* list,LT_list_item_t* item)
 	return LT_ERR_COMPLETE;
 }
 
-LT_error_code_t LT_list_remove(LT_list_t* list,LT_list_item_t* item)
+LT_error_code_t LT_list_remove(volatile LT_list_t* list,LT_list_item_t volatile * item)
 {
 	LT_list_item_t* ele = NULL;
 

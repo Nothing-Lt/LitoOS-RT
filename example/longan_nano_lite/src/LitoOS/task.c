@@ -16,12 +16,12 @@
 
 #include "lcd.h"
 
-pid_t pid;
+volatile pid_t pid;
 
-LT_TCB_list_t* ready_queue;
-LT_TCB_item_t* tcb_item_running_task;
+volatile LT_TCB_list_t* ready_queue;
+LT_TCB_item_t volatile * tcb_item_running_task;
 
-TCB_t* tcb_running;
+TCB_t volatile * tcb_running;
 
 LT_error_code_t LT_ready_queue_init()
 {

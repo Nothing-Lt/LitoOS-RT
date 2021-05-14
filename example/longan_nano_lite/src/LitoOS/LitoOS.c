@@ -12,8 +12,8 @@
 #include "../RISCV/longan_nano.h"
 #include "lcd.h"
 
-extern pid_t pid;
-extern LT_list_item_t* tcb_item_running_task;
+extern volatile pid_t pid;
+extern LT_list_item_t volatile * tcb_item_running_task;
 
 LT_SCHEDULE_STATUS lt_schedule_status;
 
