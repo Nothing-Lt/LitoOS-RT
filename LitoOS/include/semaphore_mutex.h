@@ -42,13 +42,13 @@ void LT_mutex_init(LT_mutex_t* mutex,LT_MUTEX_VALUE init_value);
  * @retval LT_ERR_COMPLETE Successfully lock this mutex.
  * @retval LT_ERR_FAILED Failed to lock this mutex.
  */
-LT_error_code_t LT_mutex_lock(LT_mutex_t* mutex);
+LT_error_code_t LT_mutex_lock(volatile LT_mutex_t* mutex);
 
 /**
  * @brief Unlock LT_mutex_t variable.Release a mutex.
  * @param[in] mutex LT_mutex_t pointer.
  */
-void LT_mutex_unlock(LT_mutex_t* mutex);
+void LT_mutex_unlock(volatile LT_mutex_t* mutex);
 
 /**
  * @brief Create a semaphore, and initialized as semaphore_size.

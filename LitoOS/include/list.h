@@ -15,9 +15,9 @@
  * @brief Definition of item in list.
  */
 typedef struct lt_list_item{
-    void* content;             /*!< Pointer pointing at the address of content */
-    struct lt_list_item* next; /*!< Point to the next item */
-    struct lt_list_item* prev; /*!< Point to the previous item */
+    volatile void* content;             /*!< Pointer pointing at the address of content */
+    struct lt_list_item volatile * next; /*!< Point to the next item */
+    struct lt_list_item volatile * prev; /*!< Point to the previous item */
 }LT_list_item_t;
 
 /**
@@ -30,10 +30,10 @@ typedef LT_error_code_t insert_func(LT_list_item_t*, LT_list_item_t*);
  * @brief Definition of one list.
  */
 typedef struct{
-    uint32_t     length;  /*!< Current length of this list */
+    volatile uint32_t     length;  /*!< Current length of this list */
     insert_func* insert_OK;
-    LT_list_item_t* head; /*!< Point to the first item in this list */
-    LT_list_item_t* end;  /*!< Point to the last item in this list */
+    LT_list_item_t volatile * head; /*!< Point to the first item in this list */
+    LT_list_item_t volatile * end;  /*!< Point to the last item in this list */
 }LT_list_t;
 
 /**
@@ -60,7 +60,7 @@ LT_error_code_t LT_list_init(LT_list_t* list,insert_func* insert_OK);
  * @retval LT_ERR_COMPLETE This operation is completed.
  * @retval lt_err_PARAMETER Wrong parameter, might because the list or item is NULL.
  */
-LT_error_code_t LT_list_insert(LT_list_t* list,LT_list_item_t* item);
+LT_error_code_t LT_list_insert(volatile LT_list_t* list,LT_list_item_t volatile * item);
 
 /**
  * @brief Remove one item from list.
@@ -71,6 +71,6 @@ LT_error_code_t LT_list_insert(LT_list_t* list,LT_list_item_t* item);
  * @retval LT_ERR_EMPTY This list is empty.
  * @retval LT_ERR_NOT_FOUND This item is not found from this list.
  */
-LT_error_code_t LT_list_remove(LT_list_t* list,LT_list_item_t* item);
+LT_error_code_t LT_list_remove(volatile LT_list_t* list,LT_list_item_t volatile * item);
 
 #endif /* INCLUDE_LIST_H_ */

@@ -15,7 +15,7 @@
 #include "include/LitoOS.h"
 #include "include/list.h"
 
-LT_timer_event_list_t* timer_event_list;
+volatile LT_timer_event_list_t* timer_event_list;
 
 LT_error_code_t LT_timer_event_init()
 {
@@ -36,7 +36,7 @@ LT_error_code_t LT_timer_event_init()
  *    ^                 ^
  *    timer_event_item  timer_event
  */
-LT_error_code_t LT_timer_event_regist(LT_timer_event_item_t** timer_event_handle,uint32_t issue_at, handler_func* handler, LT_semaphore_t* semaphore_queue,LT_TIMER_EVENT_FLAG flag)
+LT_error_code_t LT_timer_event_regist(volatile LT_timer_event_item_t** timer_event_handle,uint32_t issue_at, handler_func* handler, LT_semaphore_t* semaphore_queue, LT_TIMER_EVENT_FLAG flag)
 {
     LT_timer_event_item_t* timer_event_item = NULL;
     LT_timer_event_t* timer_event = NULL;

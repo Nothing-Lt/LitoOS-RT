@@ -16,7 +16,7 @@ void LT_mutex_init(LT_mutex_t* mutex,LT_MUTEX_VALUE init_value)
     *mutex = init_value;
 }
 
-LT_error_code_t LT_mutex_lock(LT_mutex_t* mutex)
+LT_error_code_t LT_mutex_lock(volatile LT_mutex_t* mutex)
 {
     LT_error_code_t result = LT_ERR_FAILED;
 
@@ -36,7 +36,7 @@ LT_error_code_t LT_mutex_lock(LT_mutex_t* mutex)
     return result;
 }
 
-void LT_mutex_unlock(LT_mutex_t* mutex)
+void LT_mutex_unlock(volatile LT_mutex_t* mutex)
 {
     if(NULL == mutex){
         return;

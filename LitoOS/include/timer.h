@@ -35,7 +35,7 @@ typedef struct{
     LT_TIMER_EVENT_FLAG flag;
     uint32_t            issue_at;        /*!< The handler will be executed now. */
     handler_func*       handler;         /*!< The handler function will be executed. */
-    LT_semaphore_t*     semaphore_queue; /*!< The semaphore queue */
+    volatile LT_semaphore_t* semaphore_queue; /*!< The semaphore queue */
 }LT_timer_event_t;
 
 /**
@@ -64,7 +64,7 @@ LT_error_code_t LT_timer_event_init();
  * @retval LT_ERR_PARAMETER Error with parameter.
  * @retval LT_ERR_FAILED This operation is failed, might because of malloc returned NULL.
  */
-LT_error_code_t LT_timer_event_regist(LT_timer_event_item_t** timer_event_handle,uint32_t issue_at, handler_func* handler, LT_semaphore_t* semaphore_queue, LT_TIMER_EVENT_FLAG flag);
+LT_error_code_t LT_timer_event_regist(volatile LT_timer_event_item_t** timer_event_handle,uint32_t issue_at, handler_func* handler, LT_semaphore_t* semaphore_queue, LT_TIMER_EVENT_FLAG flag);
 
 /**
  * @brief Remove a registered timer event.
